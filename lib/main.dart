@@ -37,7 +37,7 @@ class MpdDisplayApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.grey,
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
       ),
       home: MainPage(title: 'MPD Display'),
     );
