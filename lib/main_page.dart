@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'package:flutter/material.dart';
+import 'mpd_classes.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.title}) : super(key: key);
@@ -29,65 +30,106 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  int _counter = 0;
+  static const double _titleSize = 72;
+  static const double _infosize = 56;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  var _playState = PlayState();
 
   @override
   Widget build(BuildContext context) {
     var bar = AppBar(
       title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
+      actions: <Widget>[
+        const IconButton(
             onPressed: null,
             icon: const Icon(Icons.skip_previous),
             tooltip: 'Previous'),
-          IconButton(
+        const IconButton(
             onPressed: null, icon: const Icon(Icons.pause), tooltip: 'Album'),
-          IconButton(
-            onPressed: _incrementCounter,
+        const IconButton(
+            onPressed: null,
             icon: const Icon(Icons.skip_next),
             tooltip: 'Pause'),
-          // IconButton(
-          //   onPressed: null, icon: const Icon(Icons.album), tooltip: 'Album'),
-          // IconButton(
-          //     onPressed: null,
-          //     icon: const Icon(Icons.music_note),
-          //     tooltip: 'Composer'),
-          //   IconButton(
-          //     onPressed: null,
-          //     icon: const Icon(Icons.person),
-          //     tooltip: 'Performer'),
-          IconButton(
-            onPressed: _incrementCounter,
+        const IconButton(
+            onPressed: null,
             icon: const Icon(Icons.sync_problem),
             tooltip: 'Disconnected'),
-          IconButton(
+        const IconButton(
             onPressed: null,
             icon: const Icon(Icons.block_sharp),
             tooltip: 'Disconnected'),
-          ].map((w) => Transform.scale(scale: 1.5, child: w)).toList(),
-      );
+      ].map((w) => Transform.scale(scale: 1.5, child: w)).toList(),
+    );
     return Scaffold(
       appBar: bar,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            height: 2.8 * _titleSize,
+            child: titleWidget(),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+          Expanded(
+            child: subInfoList(),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget titleWidget() {
+    return Card(
+      margin: EdgeInsets.all(8),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          _playState.title ?? "-",
+          textAlign: TextAlign.center,
+          softWrap: true,
+          maxLines: 3,
+          //overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: _titleSize,
+            //fontFamily:
+          ),
+        ),
+    ));
+  }
+
+  Widget subInfoList() {
+    return Card(
+      margin: EdgeInsets.fromLTRB(24, 4, 24, 4),
+      child: SingleChildScrollView(
+        child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: _playState.subInfos.map((i) => subInfoRow(i)).toList(),
+      ),
+  ));
+  }
+
+  Widget subInfoRow(SubInfo i) {
+     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: 16),
+          child: Icon(i.icon, size: _infosize),
+        ),
+        Flexible(
+          child: Text(
+            i.text,
+            textAlign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
+            softWrap: true,
+            maxLines: 3,
+            style: const TextStyle(
+              fontSize: _infosize,
+            ),
+          ),
+        ),
+      ],
+  );
   }
 }
