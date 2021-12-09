@@ -18,7 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'package:flutter/material.dart';
-import 'mpd_classes.dart';
+import 'data_classes.dart';
+import 'mpd_client.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.title}) : super(key: key);
@@ -33,7 +34,8 @@ class _MainPageState extends State<MainPage> {
   static const double _titleSize = 72;
   static const double _infosize = 56;
 
-  var _playState = PlayState();
+  var _state = Info();
+  var mpd = MPDClient();
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +56,10 @@ class _MainPageState extends State<MainPage> {
             onPressed: null,
             icon: const Icon(Icons.sync_problem),
             tooltip: 'Disconnected'),
-        const IconButton(
-            onPressed: null,
+        IconButton(
+            onPressed: () async {
+              mpd.connect();
+            },
             icon: const Icon(Icons.block_sharp),
             tooltip: 'Disconnected'),
       ].map((w) => Transform.scale(scale: 1.5, child: w)).toList(),
@@ -68,7 +72,7 @@ class _MainPageState extends State<MainPage> {
           Container(
             height: 2.8 * _titleSize,
             child: titleWidget(),
-            ),
+          ),
           Expanded(
             child: subInfoList(),
           ),
@@ -79,37 +83,37 @@ class _MainPageState extends State<MainPage> {
 
   Widget titleWidget() {
     return Card(
-      margin: EdgeInsets.all(8),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(
-          _playState.title ?? "-",
-          textAlign: TextAlign.center,
-          softWrap: true,
-          maxLines: 3,
-          //overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: _titleSize,
-            //fontFamily:
+        margin: EdgeInsets.all(8),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            _state.info ?? "-",
+            textAlign: TextAlign.center,
+            softWrap: true,
+            maxLines: 3,
+            //overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: _titleSize,
+              //fontFamily:
+            ),
           ),
-        ),
-    ));
+        ));
   }
 
   Widget subInfoList() {
     return Card(
-      margin: EdgeInsets.fromLTRB(24, 4, 24, 4),
-      child: SingleChildScrollView(
-        child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: _playState.subInfos.map((i) => subInfoRow(i)).toList(),
-      ),
-  ));
+        margin: EdgeInsets.fromLTRB(24, 4, 24, 4),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: _state.subInfos.map((i) => subInfoRow(i)).toList(),
+          ),
+        ));
   }
 
   Widget subInfoRow(SubInfo i) {
-     return Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -130,6 +134,6 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
       ],
-  );
+    );
   }
 }

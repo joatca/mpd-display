@@ -30,34 +30,28 @@ class SubInfo {
   SubInfo(this.icon, this.text);
 }
 
-class PlayState {
-  String? title; // the current track title
-  List<SubInfo> subInfos = [];
-
-  PlayState() {
-    title = "(hwv 369) Sonata in F Major, op. 1, no. 11 - 1 Larghetto";
-    subInfos.add(SubInfo(Icons.album, "This is a really Long Album Name to see what the Rendering Is Like"));
-    subInfos.add(SubInfo(Icons.edit, "J.S. Composer"));
-    subInfos.add(SubInfo(Icons.piano, "Jane X. Virtuoso"));
-    subInfos.add(SubInfo(Icons.piano, "Simon P. Hack"));
-    subInfos.add(SubInfo(Icons.piano, "Mike Notbad"));
-    subInfos.add(SubInfo(Icons.piano, "James Obscure"));
-  }
+enum PlayState {
+  stopped,
+  paused,
+  playing,
 }
 
-/*
-Everything needed to connect to an MPD server
-*/
-class MPDServer {
-  String host;
-  int port;
-  String? username; // currently unsupported
-  String? password;
+class Info {
+  String? info; // the current track title or perhaps a status message
+  List<SubInfo> subInfos = [];
+  PlayState state = PlayState.stopped;
+  bool repeat = false;
+  bool random = false;
+  bool single = false;
+  int duration = 0; // milliseconds
+  int elapsed = 0; // milliseconds
+  int timestamp = 0; // when this info was created
 
-  MPDServer(this.host, this.port);
+  Info() {
+    timestamp = DateTime.now().millisecondsSinceEpoch;
+  }
 
-  void authenticate(String username, password) {
-    this.username = username;
-    this.password = password;
+  String toString() {
+    return "info $info subinfos ${subInfos.length}${repeat ? " [Rpt]" : ""}${random ? " [Rnd]" : ""}${single ? " [Sgl]" : ""}";
   }
 }
