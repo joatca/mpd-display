@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
@@ -36,6 +38,12 @@ class _MainPageState extends State<MainPage> {
 
   var _state = Info();
   var mpd = MPDClient();
+  late Stream<Info> infoStream;
+  StreamSubscription<Info>? subscription = null;
+
+  _MainPageState() : super() {
+    infoStream = mpd.infoStream();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +65,7 @@ class _MainPageState extends State<MainPage> {
             icon: const Icon(Icons.sync_problem),
             tooltip: 'Disconnected'),
         IconButton(
-            onPressed: () async {
-              mpd.connect();
-            },
+            onPressed: startListening,
             icon: const Icon(Icons.block_sharp),
             tooltip: 'Disconnected'),
       ].map((w) => Transform.scale(scale: 1.5, child: w)).toList(),
@@ -70,7 +76,7 @@ class _MainPageState extends State<MainPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Container(
-            height: 2.8 * _titleSize,
+            //height: 2.8 * _titleSize,
             child: titleWidget(),
           ),
           Expanded(
@@ -82,36 +88,48 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget titleWidget() {
-    return Card(
-        margin: EdgeInsets.all(8),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Text(
-            _state.info ?? "-",
-            textAlign: TextAlign.center,
-            softWrap: true,
-            maxLines: 3,
-            //overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: _titleSize,
-              //fontFamily:
-            ),
-          ),
-        ));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        _state.info ?? "-",
+        textAlign: TextAlign.center,
+        softWrap: true,
+        maxLines: 4,
+        overflow: TextOverflow.fade,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: _titleSize,
+          //fontFamily:
+        ),
+      ),
+    );
   }
 
   Widget subInfoList() {
-    return Card(
-        margin: EdgeInsets.fromLTRB(24, 4, 24, 4),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: _state.subInfos.map((i) => subInfoRow(i)).toList(),
-          ),
-        ));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: _state.subInfos.map((i) => subInfoRow(i)).toList(),
+        ),
+      ),
+    );
   }
 
+  IconData infoTypeToIcon(InfoType type) {
+    switch(type) {
+      case InfoType.album:
+        return Icons.album;
+      case InfoType.composer:
+        return Icons.edit;
+      case InfoType.performer:
+        return Icons.piano;
+      default:
+        return Icons.device_unknown;
+    }
+  }
+  
   Widget subInfoRow(SubInfo i) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -119,7 +137,7 @@ class _MainPageState extends State<MainPage> {
       children: [
         Padding(
           padding: EdgeInsets.only(right: 16),
-          child: Icon(i.icon, size: _infosize),
+          child: Icon(infoTypeToIcon(i.type), size: _infosize),
         ),
         Flexible(
           child: Text(
@@ -135,5 +153,21 @@ class _MainPageState extends State<MainPage> {
         ),
       ],
     );
+  }
+
+  void startListening() async {
+    if (subscription == null) {
+      subscription = infoStream.listen((info) {
+        setState(() {
+          _state = info;
+        });
+      });
+    } else {
+      if (subscription?.isPaused ?? false) {
+        subscription?.resume();
+      } else {
+        subscription?.pause();
+      }
+    }
   }
 }

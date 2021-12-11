@@ -19,21 +19,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
 
-/*
-Represents a combination of an icon and a piece of text;
-usually this is something like { Icons.album, "Some album name" }
-*/
-class SubInfo {
-  IconData icon;
-  String text;
-
-  SubInfo(this.icon, this.text);
-}
-
 enum PlayState {
   stopped,
   paused,
   playing,
+}
+
+enum InfoType {
+  album,
+  performer,
+  composer,
+}
+
+/*
+Represents a combination of a and a piece of text;
+usually this is something like { Icons.album, "Some album name" }
+*/
+class SubInfo {
+  InfoType type;
+  String text;
+
+  SubInfo(this.type, this.text);
 }
 
 class Info {

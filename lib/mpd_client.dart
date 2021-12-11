@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:collection';
 import 'data_classes.dart';
@@ -41,10 +42,24 @@ class MPDClient {
   int port;
   Socket? socket;
   ConnState connstate = ConnState.connecting;
+  bool stayConnected = false; // whether to reconnect on failure/disconnect
+  late StreamController<Info> controller;
+  var utf8 = Utf8Codec(allowMalformed: true);
 
-  MPDClient([this.server = "music", this.port = 6600]);
+  MPDClient([this.server = "music", this.port = 6600]) {
+    controller = StreamController<Info>(
+        onListen: connect,
+        onPause: disconnect,
+        onResume: connect,
+        onCancel: disconnect);
+  }
+
+  Stream<Info> infoStream() {
+    return controller.stream;
+  }
 
   void connect() async {
+    stayConnected = true;
     if (socket == null) {
       // only connect if we aren't already connected
       print("Destination Address: $server:$port");
@@ -68,22 +83,22 @@ class MPDClient {
   }
 
   void onData(Uint8List data) {
-    var lines = String.fromCharCodes(data).trim().split("\n");
+    var lines = utf8.decode(data).trim().split("\n");
     var last = lines.removeLast();
     if (last.startsWith("OK")) {
       // whatever it was succeeded
       switch (connstate) {
         case ConnState.connecting:
-          onConnected(lines);
+          processConnecting(lines);
           break;
         case ConnState.command:
-          onCommand(lines);
+          processCommand(lines);
           break;
         case ConnState.idle:
-          onIdle(lines);
+          processIdle(lines);
           break;
         case ConnState.readstate:
-          onState(lines);
+          processState(lines);
           break;
       }
     } else {
@@ -111,6 +126,17 @@ class MPDClient {
       socket!.close();
       socket = null;
     }
+    stayConnected = false;
+  }
+
+  void retry() {
+    if (stayConnected) {
+      print("retry after $retryInterval");
+      Timer(Duration(seconds: retryInterval), connect);
+      if (retryInterval < maxRetryInterval) {
+        retryInterval += retryIncrement;
+      }
+    }
   }
 
   void sendCommand(String message) {
@@ -120,7 +146,7 @@ class MPDClient {
     }
   }
 
-  void onConnected(lines) {
+  void processConnecting(lines) {
     if (lines.length == 0) {
       print("Connected, request status");
       getStatus();
@@ -131,11 +157,10 @@ class MPDClient {
 
   void resetConnection() {
     print("Resetting connection");
-    disconnect();
     // TODO: implement reconnect retry logic
   }
 
-  void onCommand(List<String> lines) {
+  void processCommand(List<String> lines) {
     print("onCommand, ${lines.length} lines");
     if (lines.length == 1 && lines.first == "OK") {
       goIdle();
@@ -144,7 +169,7 @@ class MPDClient {
     }
   }
 
-  void onIdle(List<String> lines) {
+  void processIdle(List<String> lines) {
     print("onIdle, ${lines.length} lines");
     var changed = false;
     for (var element in lines) {
@@ -166,16 +191,17 @@ class MPDClient {
     }
   }
 
-  void onState(List<String> lines) {
+  void processState(List<String> lines) {
     print("onState, ${lines.length} lines");
     var info = Info(); // final info to be sent to the UI
     var metadata = HashMap<String,
         String>(); // temporary storage of interesting metadata before processing
     var pattern = RegExp(r'^([^:]+): (.*)$');
     for (var line in lines) {
+      print(line);
       var match = pattern.firstMatch(line);
       if (match != null && match.groupCount == 2) {
-        var key = match.group(1);
+        var key = (match.group(1) ?? "").toLowerCase();
         var value = match.group(2);
         switch (key) {
           case "repeat":
@@ -206,19 +232,58 @@ class MPDClient {
           case "elapsed":
             info.elapsed = (double.parse(value ?? "0") * 1000).round();
             break;
-          case "Title":
+          case "title":
             print("Found title $value");
             info.info = value ?? "?";
             break;
-          case "Album":
-          case "Artist":
-          case "Composer":
-          case "Performer":
-            metadata[key!] = value ?? "?";
+          case "album":
+          case "artist":
+          case "albumartist":
+          case "composer":
+          case "performer":
+            metadata[key] = value ?? "?";
             break;
         }
       }
     }
+    // check various metadata scenarios
+    // for classical sometimes the artist tag contains the composer and
+    // sometimes the performer; let's handle those situations as sensibly as
+    // possible
+    if (metadata.containsKey("composer")) {
+      if (metadata["composer"] == metadata["artist"]) {
+        // only show it once, as a composer tag
+        info.subInfos
+            .add(SubInfo(InfoType.composer, metadata["composer"] ?? ""));
+      } else {
+        // otherwise show them separately
+        info.subInfos
+            .add(SubInfo(InfoType.composer, metadata["composer"] ?? ""));
+        // but only show the artist if it actually exists
+        if (metadata.containsKey("artist")) {
+          info.subInfos
+              .add(SubInfo(InfoType.performer, metadata["artist"] ?? ""));
+        }
+      }
+    } else {
+      // no composer, show just the artist
+      if (metadata.containsKey("artist")) {
+        info.subInfos
+            .add(SubInfo(InfoType.performer, metadata["artist"] ?? ""));
+      }
+    }
+    if (metadata.containsKey("performer")) {
+      info.subInfos
+          .add(SubInfo(InfoType.performer, metadata["performer"] ?? "?"));
+    } else if (metadata.containsKey("albumartist") &&
+        metadata["albumartist"] != metadata["artist"]) {
+      info.subInfos
+          .add(SubInfo(InfoType.performer, metadata["albumartist"] ?? "?"));
+    }
+    if (metadata.containsKey("album")) {
+      info.subInfos.add(SubInfo(InfoType.album, metadata["album"] ?? "?"));
+    }
+    controller.add(info);
     print("Info: $info");
     print("Metadata: $metadata");
     goIdle();
@@ -234,13 +299,5 @@ class MPDClient {
     print("getStatus");
     sendCommand("command_list_begin\nstatus\ncurrentsong\ncommand_list_end");
     connstate = ConnState.readstate;
-  }
-
-  void retry() {
-    print("retry after $retryInterval");
-    Timer(Duration(seconds: retryInterval), connect);
-    if (retryInterval < maxRetryInterval) {
-      retryInterval += retryIncrement;
-    }
   }
 }
