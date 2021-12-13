@@ -35,10 +35,11 @@ class MpdDisplayApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.grey,
-        brightness: Brightness.light,
-      ),
+      // theme: ThemeData(
+      //   primarySwatch: Colors.grey,
+      //   brightness: Brightness.light,
+      //   fontFamily: 'Serif',
+      // ),
       home: MainPage(title: 'MPD Display'),
     );
   }
