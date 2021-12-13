@@ -47,6 +47,7 @@ class MPDClient {
   var utf8 = Utf8Codec(allowMalformed: true);
 
   MPDClient([this.server = "music", this.port = 6600]) {
+    print("created mpd");
     controller = StreamController<Info>(
         onListen: connect,
         onPause: disconnect,
