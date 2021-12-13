@@ -71,4 +71,15 @@ flutter:
     - family: Swerve
       fonts:
         - asset: fonts/Swerve.ttf
-
+    - family: Cardo
+      fonts:
+        - asset: fonts/Cardo-Bold.ttf
+    - family: Parisienne
+      fonts:
+        - asset: fonts/Parisienne-Regular.ttf
+    - family: Playfair
+      fonts:
+        - asset: fonts/PlayfairDisplaySC-Regular.ttf
+    - family: PressStart
+      fonts:
+        - asset: fonts/PressStart2P-Regular.ttf
