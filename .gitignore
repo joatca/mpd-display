@@ -45,5 +45,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Ignore Emacs backup files
+# Emacs backup files
 *~
+
+# Generated PlantUML diagrams
+doc/*.png
