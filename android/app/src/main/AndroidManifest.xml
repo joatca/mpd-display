@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="me.joat.mpd_display">
+          package="me.joat.mpd_display">
+   <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="mpd_display"
         android:name="${applicationName}"
