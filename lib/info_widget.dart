@@ -137,7 +137,7 @@ class _InfoWidgetState extends State<InfoWidget> {
   Widget subInfoRow(SubInfo i) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Padding(
           padding: EdgeInsets.only(right: 16),
