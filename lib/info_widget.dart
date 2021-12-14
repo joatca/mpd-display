@@ -19,12 +19,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:mpd_display/main_page.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 
 class InfoWidget extends StatefulWidget {
-  const InfoWidget({Key? key, required this.title}) : super(key: key);
+  InfoWidget(
+      {Key? key,
+      required this.mpd,
+      required this.setThemeCallback,
+      required this.title})
+      : super(key: key);
 
+  final MPDClient mpd;
+  final void Function(String a) setThemeCallback;
   final String title;
 
   @override
@@ -33,31 +41,48 @@ class InfoWidget extends StatefulWidget {
 
 class _InfoWidgetState extends State<InfoWidget> {
   var _state = Info();
-  var mpd = MPDClient();
   late Stream<Info> infoStream;
-  StreamSubscription<Info>? subscription = null;
+  StreamSubscription<Info>? subscription;
+  int currentScroll = 0;
+  int scrollDirection = 1;
+  var scrollKeys = List<GlobalKey>.empty(growable: true);
+  Timer? ticker;
 
-  _InfoWidgetState() {
-    infoStream = mpd.infoStream();
-  }
+  _InfoWidgetState() {}
 
   @override
   void initState() {
     super.initState();
+    infoStream = widget.mpd.infoStream();
     startListening();
+    ticker = Timer.periodic(Duration(seconds: 5), tickScroll);
   }
 
   @override
   void dispose() {
+    ticker?.cancel();
+    ticker = null;
     stopListening();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeNames = ThemeNames.of(context).themeNames;
     var bar = AppBar(
       title: Text(widget.title),
       actions: <Widget>[
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.text_format),
+          itemBuilder: (context) {
+            return themeNames
+                .map((name) => PopupMenuItem(child: Text(name), value: name))
+                .toList();
+          },
+          onSelected: (s) {
+            widget.setThemeCallback(s);
+          },
+        ),
         const IconButton(
             onPressed: null,
             icon: const Icon(Icons.skip_previous),
@@ -72,8 +97,8 @@ class _InfoWidgetState extends State<InfoWidget> {
             onPressed: null,
             icon: const Icon(Icons.sync_problem),
             tooltip: 'Disconnected'),
-        const IconButton(
-            onPressed: null,
+        IconButton(
+            onPressed: () {},
             icon: const Icon(Icons.block_sharp),
             tooltip: 'Disconnected'),
       ].map((w) => Transform.scale(scale: 1.5, child: w)).toList(),
@@ -109,13 +134,22 @@ class _InfoWidgetState extends State<InfoWidget> {
   }
 
   Widget subInfoList() {
+    var children = _state.subInfos
+        .asMap()
+        .entries
+        .map((entry) => subInfoRow(scrollKeys[entry.key], entry.value))
+        .toList();
+    if (scrollKeys.isNotEmpty) {
+      children.add(Row(
+          key: scrollKeys[scrollKeys.length -
+              1])); // add one dummy end widget, to ensure we always scroll to the very end
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          children:
-              _state.subInfos.map((i) => subInfoRow(i)).toList(),
+          children: children,
         ),
       ),
     );
@@ -134,14 +168,18 @@ class _InfoWidgetState extends State<InfoWidget> {
     }
   }
 
-  Widget subInfoRow(SubInfo i) {
+  Widget subInfoRow(GlobalKey key, SubInfo i) {
     return Row(
+      key: key,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Padding(
           padding: EdgeInsets.only(right: 16),
-          child: Icon(infoTypeToIcon(i.type)),
+          child: Icon(
+            infoTypeToIcon(i.type),
+            size: Theme.of(context).textTheme.headline2?.fontSize,
+          ),
         ),
         Flexible(
           child: Text(
@@ -149,12 +187,33 @@ class _InfoWidgetState extends State<InfoWidget> {
             textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
             softWrap: true,
-            maxLines: 3,
+            maxLines: 2,
             style: Theme.of(context).textTheme.headline2,
           ),
         ),
       ],
     );
+  }
+
+  void tickScroll(Timer timer) async {
+    if (scrollKeys.isNotEmpty) {
+      currentScroll += 1;
+      if (currentScroll >= scrollKeys.length) {
+        currentScroll = 0;
+      }
+      scrollTo(currentScroll);
+    }
+  }
+
+  void scrollTo(int pos) async {
+    final cntxt = scrollKeys[pos].currentContext;
+    if (cntxt != null) {
+      Scrollable.ensureVisible(
+        cntxt,
+        duration: Duration(seconds: 1),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void startListening() async {
@@ -163,6 +222,11 @@ class _InfoWidgetState extends State<InfoWidget> {
         setState(() {
           _state = info;
         });
+        scrollKeys = _state.subInfos.map((e) => GlobalKey()).toList();
+        scrollKeys
+            .add(GlobalKey()); // add one more for the invisible end widget
+        currentScroll = -1;
+        scrollTo(0);
       });
     } else {
       if (subscription?.isPaused ?? false) {

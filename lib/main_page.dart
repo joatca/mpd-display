@@ -29,6 +29,27 @@ class PageState {
   PageState();
 }
 
+// this class will let the sub-widgets look up theme names without a dumb callback
+class ThemeNames extends InheritedWidget {
+  const ThemeNames({
+    Key? key,
+    required this.themeNames,
+    required Widget child,
+  }) : super(key: key, child: child);
+
+  final List<String> themeNames;
+
+  static ThemeNames of(BuildContext context) {
+    final ThemeNames? result = context.dependOnInheritedWidgetOfExactType<ThemeNames>();
+    assert(result != null, 'No ThemeNames found in context');
+    return result!;
+  }
+
+  @override
+  bool updateShouldNotify(ThemeNames oldWidget) => themeNames != oldWidget.themeNames;
+
+}
+
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.title}) : super(key: key);
 
@@ -46,11 +67,11 @@ class InfoTheme {
   Color? infoIconColor;
 
   InfoTheme({
-      this.font,
-      this.bgColor,
-      this.titleColor,
-      this.infoColor,
-      this.infoIconColor
+    this.font,
+    this.bgColor,
+    this.titleColor,
+    this.infoColor,
+    this.infoIconColor,
   });
 }
 
@@ -112,42 +133,59 @@ class _MainPageState extends State<MainPage> {
   };
 
   var _state = PageState();
+  var mpd = MPDClient();
 
   _MainPageState() {
     // nothing for now
+  }
+
+  void setThemeName(String name) {
+    setState(() {
+      _state.themeName = name;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     //_state.themeName = "Cyberpunk";
     //_state.themeName = "Manuscript";
-    _state.themeName = "Negative Manuscript";
+    //_state.themeName = "Negative Manuscript";
     //_state.themeName = "Classic";
     //_state.themeName = "Elegance";
     //_state.themeName = "8Bit";
     //_state.themeName = "Imposing";
     var themeInfo = themes[_state.themeName];
     var textTheme = Theme.of(context).textTheme.copyWith(
-      headline1: TextStyle(
-        fontFamily: themeInfo?.font,
-        fontSize: _titleSize,
-        color: themeInfo?.titleColor,
-      ),
-      headline2: TextStyle(
-        fontFamily: themeInfo?.font,
-        fontSize: _infoSize,
-        color: themeInfo?.infoColor,
-      ),
-    );
+          headline1: TextStyle(
+            fontFamily: themeInfo?.font,
+            fontSize: _titleSize,
+            color: themeInfo?.titleColor,
+          ),
+          headline2: TextStyle(
+            fontFamily: themeInfo?.font,
+            fontSize: _infoSize,
+            color: themeInfo?.infoColor,
+          ),
+        );
     var iconTheme = Theme.of(context).iconTheme.copyWith(
-      color: themeInfo?.infoIconColor ?? themeInfo?.infoColor,
-      size: _infoSize,
-    );
+          color: themeInfo?.infoIconColor ?? themeInfo?.infoColor,
+        );
+    var appbarTheme = Theme.of(context).appBarTheme.copyWith(
+          actionsIconTheme: iconTheme,
+          backgroundColor: themeInfo?.bgColor,
+        );
     var theme = Theme.of(context).copyWith(
       textTheme: textTheme,
       scaffoldBackgroundColor: themeInfo?.bgColor,
       iconTheme: iconTheme,
+      appBarTheme: appbarTheme,
     );
-    return Theme(data: theme, child: const InfoWidget(title: "Foo"));
+    return Theme(
+        data: theme,
+        child: ThemeNames(
+          themeNames: themes.keys.toList(),
+          child: InfoWidget(
+              mpd: mpd, setThemeCallback: setThemeName, title: "MPD Display"),
+        ));
   }
 }
