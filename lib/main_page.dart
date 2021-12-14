@@ -76,8 +76,8 @@ class InfoTheme {
 }
 
 class _MainPageState extends State<MainPage> {
-  static const double _titleSize = 72;
-  static const double _infoSize = 56;
+  static const double _titleSize = 76;
+  static const double _infoSize = 60;
 
   static var themes = {
     "Plain": InfoTheme(
@@ -92,11 +92,11 @@ class _MainPageState extends State<MainPage> {
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "Negative Manuscript": InfoTheme(
+    "Dark Manuscript": InfoTheme(
       font: "Baskerville",
       bgColor: Colors.black,
       titleColor: Colors.white,
-      infoColor: Colors.white70,
+      infoColor: Colors.white,
       infoIconColor: Colors.white,
     ),
     "Classic": InfoTheme(
@@ -105,30 +105,17 @@ class _MainPageState extends State<MainPage> {
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "Elegance": InfoTheme(
-      font: "Parisienne",
-      bgColor: Colors.white,
-      titleColor: Colors.black,
-      infoColor: Colors.black,
+    "Dark Classic": InfoTheme(
+      font: "Cardo",
+      bgColor: Colors.black,
+      titleColor: Colors.white,
+      infoColor: Colors.white,
     ),
     "Imposing": InfoTheme(
       font: "Playfair",
       bgColor: Colors.black,
       titleColor: Colors.white,
-      infoColor: Colors.white70,
-    ),
-    "8Bit": InfoTheme(
-      font: "PressStart",
-      bgColor: Colors.black,
-      titleColor: Colors.white,
-      infoColor: Colors.red,
-    ),
-    "Cyberpunk": InfoTheme(
-      font: "Swerve",
-      bgColor: Colors.black,
-      titleColor: Colors.pink,
-      infoColor: Colors.blue,
-      infoIconColor: Colors.green,
+      infoColor: Colors.white,
     ),
   };
 
