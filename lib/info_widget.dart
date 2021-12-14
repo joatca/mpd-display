@@ -45,7 +45,6 @@ class _InfoWidgetState extends State<InfoWidget> {
   StreamSubscription<Info>? subscription;
   int currentScroll = 0;
   int scrollDirection = 1;
-  var scrollKeys = List<GlobalKey>.empty(growable: true);
   Timer? ticker;
 
   _InfoWidgetState() {}
@@ -126,7 +125,7 @@ class _InfoWidgetState extends State<InfoWidget> {
         _state.info ?? "-",
         textAlign: TextAlign.center,
         softWrap: true,
-        maxLines: 4,
+        maxLines: 3,
         overflow: TextOverflow.fade,
         style: Theme.of(context).textTheme.headline1,
       ),
@@ -135,15 +134,8 @@ class _InfoWidgetState extends State<InfoWidget> {
 
   Widget subInfoList() {
     var children = _state.subInfos
-        .asMap()
-        .entries
-        .map((entry) => subInfoRow(scrollKeys[entry.key], entry.value))
+        .map((entry) => subInfoRow(entry))
         .toList();
-    if (scrollKeys.isNotEmpty) {
-      children.add(Row(
-          key: scrollKeys[scrollKeys.length -
-              1])); // add one dummy end widget, to ensure we always scroll to the very end
-    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -168,22 +160,22 @@ class _InfoWidgetState extends State<InfoWidget> {
     }
   }
 
-  Widget subInfoRow(GlobalKey key, SubInfo i) {
+  Widget subInfoRow(SubInfo si) {
     return Row(
-      key: key,
+      key: si.key,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Padding(
-          padding: EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.only(right: 16),
           child: Icon(
-            infoTypeToIcon(i.type),
+            infoTypeToIcon(si.type),
             size: Theme.of(context).textTheme.headline2?.fontSize,
           ),
         ),
         Flexible(
           child: Text(
-            i.text,
+            si.text,
             textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
             softWrap: true,
@@ -196,9 +188,9 @@ class _InfoWidgetState extends State<InfoWidget> {
   }
 
   void tickScroll(Timer timer) async {
-    if (scrollKeys.isNotEmpty) {
+    if (_state.subInfos.isNotEmpty) {
       currentScroll += 1;
-      if (currentScroll >= scrollKeys.length) {
+      if (currentScroll >= _state.subInfos.length) {
         currentScroll = 0;
       }
       scrollTo(currentScroll);
@@ -206,7 +198,7 @@ class _InfoWidgetState extends State<InfoWidget> {
   }
 
   void scrollTo(int pos) async {
-    final cntxt = scrollKeys[pos].currentContext;
+    final cntxt = _state.subInfos[pos].key.currentContext;
     if (cntxt != null) {
       Scrollable.ensureVisible(
         cntxt,
@@ -222,9 +214,6 @@ class _InfoWidgetState extends State<InfoWidget> {
         setState(() {
           _state = info;
         });
-        scrollKeys = _state.subInfos.map((e) => GlobalKey()).toList();
-        scrollKeys
-            .add(GlobalKey()); // add one more for the invisible end widget
         currentScroll = -1;
         scrollTo(0);
       });

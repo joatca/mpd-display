@@ -38,6 +38,7 @@ usually this is something like { Icons.album, "Some album name" }
 class SubInfo {
   InfoType type;
   String text;
+  GlobalKey key = GlobalKey();
 
   SubInfo(this.type, this.text);
 }
