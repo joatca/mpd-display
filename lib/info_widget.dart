@@ -22,6 +22,8 @@ import 'package:flutter/material.dart';
 import 'package:mpd_display/main_page.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
+import 'title_text.dart';
+import 'subinfo.dart';
 
 class InfoWidget extends StatefulWidget {
   InfoWidget(
@@ -108,82 +110,13 @@ class _InfoWidgetState extends State<InfoWidget> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Container(
-            child: titleWidget(),
+            child: TitleText(state: _state, context: context),
           ),
           Expanded(
-            child: subInfoList(),
+            child: SubInfoList(context: context, subInfos: _state.subInfos),
           ),
         ],
       ),
-    );
-  }
-
-  Widget titleWidget() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        _state.info ?? "-",
-        textAlign: TextAlign.center,
-        softWrap: true,
-        maxLines: 3,
-        overflow: TextOverflow.fade,
-        style: Theme.of(context).textTheme.headline1,
-      ),
-    );
-  }
-
-  Widget subInfoList() {
-    var children = _state.subInfos
-        .map((entry) => subInfoRow(entry))
-        .toList();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: children,
-        ),
-      ),
-    );
-  }
-
-  IconData infoTypeToIcon(InfoType type) {
-    switch (type) {
-      case InfoType.album:
-        return Icons.album;
-      case InfoType.composer:
-        return Icons.edit;
-      case InfoType.performer:
-        return Icons.piano;
-      default:
-        return Icons.device_unknown;
-    }
-  }
-
-  Widget subInfoRow(SubInfo si) {
-    return Row(
-      key: si.key,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: Icon(
-            infoTypeToIcon(si.type),
-            size: Theme.of(context).textTheme.headline2?.fontSize,
-          ),
-        ),
-        Flexible(
-          child: Text(
-            si.text,
-            textAlign: TextAlign.left,
-            overflow: TextOverflow.ellipsis,
-            softWrap: true,
-            maxLines: 2,
-            style: Theme.of(context).textTheme.headline2,
-          ),
-        ),
-      ],
     );
   }
 
