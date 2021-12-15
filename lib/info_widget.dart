@@ -69,40 +69,53 @@ class _InfoWidgetState extends State<InfoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final themeNames = ThemeNames.of(context).themeNames;
+    final mainPageData = MainPageData.of(context);
+    var actions = <Widget>[
+      IconButton(
+          onPressed: _state.state == PlayState.stopped
+              ? null
+              : () => widget.mpd.sendCommand("previous"),
+          icon: const Icon(Icons.skip_previous),
+          tooltip: 'Previous'),
+      IconButton(
+          onPressed: () {
+            switch (_state.state) {
+              case PlayState.stopped:
+                widget.mpd.sendCommand("play");
+                break;
+              case PlayState.paused:
+                widget.mpd.sendCommand("pause 0");
+                break;
+              case PlayState.playing:
+                widget.mpd.sendCommand("pause 1");
+            }
+          },
+          icon: _state.state == PlayState.playing
+              ? Icon(Icons.pause)
+              : Icon(Icons.play_arrow),
+          tooltip: 'Album'),
+      IconButton(
+          onPressed: _state.state == PlayState.stopped
+              ? null
+              : () => widget.mpd.sendCommand("next"),
+          icon: const Icon(Icons.skip_next),
+          tooltip: 'Pause'),
+        VerticalDivider(),
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.text_format),
+        itemBuilder: (context) {
+          return mainPageData.themeNames
+              .map((name) => CheckedPopupMenuItem(child: Text(name), value: name, checked: name == mainPageData.theme,))
+              .toList();
+        },
+        onSelected: (s) {
+          widget.setThemeCallback(s);
+        },
+      ),
+    ]; //.map((w) => Transform.scale(scale: 1.5, child: w)).toList();
     var bar = AppBar(
       title: Text(widget.title),
-      actions: <Widget>[
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.text_format),
-          itemBuilder: (context) {
-            return themeNames
-                .map((name) => PopupMenuItem(child: Text(name), value: name))
-                .toList();
-          },
-          onSelected: (s) {
-            widget.setThemeCallback(s);
-          },
-        ),
-        const IconButton(
-            onPressed: null,
-            icon: const Icon(Icons.skip_previous),
-            tooltip: 'Previous'),
-        const IconButton(
-            onPressed: null, icon: const Icon(Icons.pause), tooltip: 'Album'),
-        const IconButton(
-            onPressed: null,
-            icon: const Icon(Icons.skip_next),
-            tooltip: 'Pause'),
-        const IconButton(
-            onPressed: null,
-            icon: const Icon(Icons.sync_problem),
-            tooltip: 'Disconnected'),
-        IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.block_sharp),
-            tooltip: 'Disconnected'),
-      ].map((w) => Transform.scale(scale: 1.5, child: w)).toList(),
+      actions: actions,
     );
     return Scaffold(
       appBar: bar,

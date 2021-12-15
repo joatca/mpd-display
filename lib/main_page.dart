@@ -28,24 +28,26 @@ class PageState {
 }
 
 // this class will let the sub-widgets look up theme names without a dumb callback
-class ThemeNames extends InheritedWidget {
-  const ThemeNames({
-    Key? key,
-    required this.themeNames,
-    required Widget child,
+class MainPageData extends InheritedWidget {
+  const MainPageData({
+      Key? key,
+      required this.theme,
+      required this.themeNames,
+      required Widget child,
   }) : super(key: key, child: child);
 
+  final String theme;
   final List<String> themeNames;
 
-  static ThemeNames of(BuildContext context) {
-    final ThemeNames? result =
-        context.dependOnInheritedWidgetOfExactType<ThemeNames>();
+  static MainPageData of(BuildContext context) {
+    final MainPageData? result =
+        context.dependOnInheritedWidgetOfExactType<MainPageData>();
     assert(result != null, 'No ThemeNames found in context');
     return result!;
   }
 
   @override
-  bool updateShouldNotify(ThemeNames oldWidget) =>
+  bool updateShouldNotify(MainPageData oldWidget) =>
       themeNames != oldWidget.themeNames;
 }
 
@@ -181,7 +183,8 @@ class _MainPageState extends State<MainPage> {
     );
     return Theme(
         data: theme,
-        child: ThemeNames(
+        child: MainPageData(
+          theme: _state.themeName,
           themeNames: themes.keys.toList(),
           child: InfoWidget(
               mpd: mpd, setThemeCallback: setThemeName, title: "MPD Display"),

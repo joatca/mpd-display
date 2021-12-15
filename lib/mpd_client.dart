@@ -142,11 +142,11 @@ class MPDClient {
 
   void sendCommand(String message) {
     if (socket != null) {
-      socket!.write("$message\n");
+      socket!.write("noidle\n$message\n");
       connstate = ConnState.command;
     }
   }
-
+  
   void processConnecting(lines) {
     if (lines.length == 0) {
       print("Connected, request status");
