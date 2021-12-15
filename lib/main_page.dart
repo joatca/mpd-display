@@ -30,10 +30,10 @@ class PageState {
 // this class will let the sub-widgets look up theme names without a dumb callback
 class MainPageData extends InheritedWidget {
   const MainPageData({
-      Key? key,
-      required this.theme,
-      required this.themeNames,
-      required Widget child,
+    Key? key,
+    required this.theme,
+    required this.themeNames,
+    required Widget child,
   }) : super(key: key, child: child);
 
   final String theme;
@@ -172,8 +172,8 @@ class _MainPageState extends State<MainPage> {
           color: themeInfo?.infoIconColor ?? themeInfo?.infoColor,
         );
     var appbarTheme = Theme.of(context).appBarTheme.copyWith(
-          actionsIconTheme: iconTheme,
           backgroundColor: themeInfo?.bgColor,
+          foregroundColor: themeInfo?.titleColor,
         );
     var theme = Theme.of(context).copyWith(
       textTheme: textTheme,
