@@ -32,22 +32,22 @@ mixin TextUtil {
   }
 }
 
-class SettingsPage extends StatefulWidget {
-  SettingsPage({Key? key, this.title}) : super(key: key);
+class AboutPage extends StatefulWidget {
+  AboutPage({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  _AboutPageState createState() => _AboutPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> with TextUtil {
+class _AboutPageState extends State<AboutPage> with TextUtil {
   static const title = 'MPD Display';
   static const url = 'https://apps.joat.me/page/mpd-display/';
   static const ppUrl = 'https://apps.joat.me/page/privacy';
   static const copyYear = '2021';
   static const copyright = 'Fraser McCrossan';
-  static const fontCopy = 'Includes the fonts EB Garamond, Noto Sans and Noto Serif from Google Fonts';
+  static const fontCopy = 'The fonts used in this application have been chosen for their readability at a distance. "Clean" themes use the font Noto Sans, "Formal" themes use Noto Serif, and "Baroque" themes use EB Garamond, all from Google Fonts.';
   static const license =
       'This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions';
   String _version = '';

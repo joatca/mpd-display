@@ -24,7 +24,7 @@ import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'title_text.dart';
 import 'subinfo.dart';
-import 'settings.dart';
+import 'about.dart';
 
 class InfoWidget extends StatefulWidget {
   InfoWidget(
@@ -145,7 +145,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SettingsPage()),
+            MaterialPageRoute(builder: (context) => AboutPage()),
           );
         },
         icon: const Icon(Icons.settings),
