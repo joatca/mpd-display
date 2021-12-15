@@ -16,14 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'mpd_client.dart';
 import 'info_widget.dart';
 
 class PageState {
-  String themeName = "Manuscript";
+  String themeName = "Clean";
 
   PageState();
 }
@@ -80,39 +79,39 @@ class _MainPageState extends State<MainPage> {
   static const double _infoSize = 60;
 
   static var themes = {
-    "Plain": InfoTheme(
-      font: "Roboto",
+    "Clean": InfoTheme(
+      font: "NotoSans",
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "Manuscript": InfoTheme(
-      font: "Baskerville",
+    "Clean Dark": InfoTheme(
+      font: "NotoSans",
+      bgColor: Colors.black,
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+    ),
+    "Formal": InfoTheme(
+      font: "NotoSerif",
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "Dark Manuscript": InfoTheme(
-      font: "Baskerville",
+    "Formal Dark": InfoTheme(
+      font: "NotoSerif",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
       infoIconColor: Colors.white,
     ),
-    "Classic": InfoTheme(
-      font: "Cardo",
+    "Baroque": InfoTheme(
+      font: "Garamond",
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "Dark Classic": InfoTheme(
-      font: "Cardo",
-      bgColor: Colors.black,
-      titleColor: Colors.white,
-      infoColor: Colors.white,
-    ),
-    "Imposing": InfoTheme(
-      font: "Playfair",
+    "Baroque Dark": InfoTheme(
+      font: "Garamond",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
@@ -154,13 +153,6 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    //_state.themeName = "Cyberpunk";
-    //_state.themeName = "Manuscript";
-    //_state.themeName = "Negative Manuscript";
-    //_state.themeName = "Classic";
-    //_state.themeName = "Elegance";
-    //_state.themeName = "8Bit";
-    //_state.themeName = "Imposing";
     var themeInfo = themes[_state.themeName];
     var textTheme = Theme.of(context).textTheme.copyWith(
           headline1: TextStyle(

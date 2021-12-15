@@ -65,12 +65,12 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
 
   fonts:
-    - family: Baskerville
+    - family: NotoSans
       fonts:
-        - asset: fonts/Baskervville-Regular.ttf
-    - family: Cardo
+        - asset: fonts/NotoSansDisplay.ttf
+    - family: NotoSerif
       fonts:
-        - asset: fonts/Cardo-Bold.ttf
-    - family: Playfair
+        - asset: fonts/NotoSerif-Regular.ttf
+    - family: Garamond
       fonts:
-        - asset: fonts/PlayfairDisplaySC-Regular.ttf
+        - asset: fonts/EBGaramond.ttf
