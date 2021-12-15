@@ -199,7 +199,7 @@ class MPDClient {
         String>(); // temporary storage of interesting metadata before processing
     var pattern = RegExp(r'^([^:]+): (.*)$');
     for (var line in lines) {
-      print(line);
+      //print(line);
       var match = pattern.firstMatch(line);
       if (match != null && match.groupCount == 2) {
         var key = (match.group(1) ?? "").toLowerCase();
@@ -234,7 +234,6 @@ class MPDClient {
             info.elapsed = (double.parse(value ?? "0") * 1000).round();
             break;
           case "title":
-            print("Found title $value");
             info.info = value ?? "?";
             break;
           case "album":
