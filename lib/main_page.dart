@@ -17,9 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'data_classes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'mpd_client.dart';
 import 'info_widget.dart';
 
@@ -40,14 +39,15 @@ class ThemeNames extends InheritedWidget {
   final List<String> themeNames;
 
   static ThemeNames of(BuildContext context) {
-    final ThemeNames? result = context.dependOnInheritedWidgetOfExactType<ThemeNames>();
+    final ThemeNames? result =
+        context.dependOnInheritedWidgetOfExactType<ThemeNames>();
     assert(result != null, 'No ThemeNames found in context');
     return result!;
   }
 
   @override
-  bool updateShouldNotify(ThemeNames oldWidget) => themeNames != oldWidget.themeNames;
-
+  bool updateShouldNotify(ThemeNames oldWidget) =>
+      themeNames != oldWidget.themeNames;
 }
 
 class MainPage extends StatefulWidget {
@@ -126,7 +126,27 @@ class _MainPageState extends State<MainPage> {
     // nothing for now
   }
 
+  @override
+  void initState() {
+    super.initState();
+    loadTheme();
+  }
+
   void setThemeName(String name) {
+    setState(() {
+      _state.themeName = name;
+    });
+    saveTheme(name);
+  }
+
+  void saveTheme(String name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme', name);
+  }
+
+  void loadTheme() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('theme') ?? (themes.keys.first);
     setState(() {
       _state.themeName = name;
     });
