@@ -30,6 +30,8 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ">=2.0.11"
+  url_launcher: ">=6.0.17"
+  package_info_plus: ">=1.3.0"
 
 dev_dependencies:
   flutter_test:

@@ -109,7 +109,7 @@ class MPDClient {
   }
 
   void onDone() {
-    print("Connection has terminated.");
+    print("Connection has terminated");
     socket = null;
     retry();
   }
@@ -118,6 +118,17 @@ class MPDClient {
     print("onError: $e");
     socket = null;
     retry();
+  }
+
+  void changeConnection(String? server, int? port) {
+    disconnect();
+    if (server != null) {
+      this.server = server;
+    }
+    if (port != null) {
+      this.port = port;
+    }
+    connect();
   }
 
   void disconnect() {
@@ -146,7 +157,7 @@ class MPDClient {
       connstate = ConnState.command;
     }
   }
-  
+
   void processConnecting(lines) {
     if (lines.length == 0) {
       print("Connected, request status");

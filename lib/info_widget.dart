@@ -24,6 +24,7 @@ import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'title_text.dart';
 import 'subinfo.dart';
+import 'settings.dart';
 
 class InfoWidget extends StatefulWidget {
   InfoWidget(
@@ -39,6 +40,7 @@ class InfoWidget extends StatefulWidget {
 
   @override
   State<InfoWidget> createState() => _InfoWidgetState();
+  
 }
 
 class _InfoWidgetState extends State<InfoWidget> {
@@ -54,17 +56,25 @@ class _InfoWidgetState extends State<InfoWidget> {
   @override
   void initState() {
     super.initState();
+    okGo();
+  }
+
+  @override
+  void dispose() {
+    stopThat();
+    super.dispose();
+  }
+
+  void okGo() {
     infoStream = widget.mpd.infoStream();
     startListening();
     ticker = Timer.periodic(Duration(seconds: 5), tickScroll);
   }
 
-  @override
-  void dispose() {
+  void stopThat() {
     ticker?.cancel();
     ticker = null;
     stopListening();
-    super.dispose();
   }
 
   @override
@@ -100,17 +110,30 @@ class _InfoWidgetState extends State<InfoWidget> {
               : () => widget.mpd.sendCommand("next"),
           icon: const Icon(Icons.skip_next),
           tooltip: 'Pause'),
-        VerticalDivider(),
+      VerticalDivider(),
       PopupMenuButton<String>(
         icon: const Icon(Icons.text_format),
         itemBuilder: (context) {
           return mainPageData.themeNames
-              .map((name) => CheckedPopupMenuItem(child: Text(name), value: name, checked: name == mainPageData.theme,))
+              .map((name) => CheckedPopupMenuItem(
+                    child: Text(name),
+                    value: name,
+                    checked: name == mainPageData.theme,
+                  ))
               .toList();
         },
         onSelected: (s) {
           widget.setThemeCallback(s);
         },
+      ),
+      IconButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsPage()),
+          );
+        },
+        icon: const Icon(Icons.settings),
       ),
     ]; //.map((w) => Transform.scale(scale: 1.5, child: w)).toList();
     var bar = AppBar(
