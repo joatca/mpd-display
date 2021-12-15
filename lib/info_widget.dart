@@ -40,10 +40,9 @@ class InfoWidget extends StatefulWidget {
 
   @override
   State<InfoWidget> createState() => _InfoWidgetState();
-  
 }
 
-class _InfoWidgetState extends State<InfoWidget> {
+class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   var _state = Info();
   late Stream<Info> infoStream;
   StreamSubscription<Info>? subscription;
@@ -56,16 +55,31 @@ class _InfoWidgetState extends State<InfoWidget> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance?.addObserver(this);
     okGo();
   }
 
   @override
   void dispose() {
     stopThat();
+    WidgetsBinding.instance?.removeObserver(this);
+    subscription?.cancel();
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      stopThat();
+    }
+    if (state == AppLifecycleState.resumed) {
+      okGo();
+    }
+    print('AppLifecycleState state:  $state');
+  }
+
   void okGo() {
+    print("okGo");
     infoStream = widget.mpd.infoStream();
     startListening();
     ticker = Timer.periodic(Duration(seconds: 5), tickScroll);
@@ -75,6 +89,7 @@ class _InfoWidgetState extends State<InfoWidget> {
     ticker?.cancel();
     ticker = null;
     stopListening();
+    print("stopThat");
   }
 
   @override
@@ -189,14 +204,11 @@ class _InfoWidgetState extends State<InfoWidget> {
     } else {
       if (subscription?.isPaused ?? false) {
         subscription?.resume();
-      } else {
-        subscription?.pause();
       }
     }
   }
 
   void stopListening() {
-    subscription?.cancel();
-    subscription = null;
+    subscription?.pause();
   }
 }
