@@ -47,6 +47,7 @@ class Info {
   String? info; // the current track title or perhaps a status message
   List<SubInfo> subInfos = [];
   PlayState state = PlayState.stopped;
+  bool connected = false;
   bool repeat = false;
   bool random = false;
   bool single = false;
@@ -54,7 +55,7 @@ class Info {
   int elapsed = 0; // milliseconds
   int timestamp = 0; // when this info was created
 
-  Info() {
+  Info({this.connected = false, this.info}) {
     timestamp = DateTime.now().millisecondsSinceEpoch;
   }
 

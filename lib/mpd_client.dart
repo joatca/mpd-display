@@ -37,6 +37,7 @@ class MPDClient {
   static const minRetryInterval = 1;
   static const maxRetryInterval = 5;
   static const retryIncrement = 1;
+  Timer? retryTimer;
   var retryInterval = minRetryInterval;
   String server;
   int port;
@@ -65,6 +66,7 @@ class MPDClient {
       // only connect if we aren't already connected
       print("Destination Address: $server:$port");
       Socket.connect(server, port, timeout: Duration(seconds: 5)).then((sock) {
+        retryTimer?.cancel();
         print("Connected to ${sock.remoteAddress.address}:${sock.remotePort}");
         retryInterval = minRetryInterval;
         sock.listen(
@@ -79,6 +81,7 @@ class MPDClient {
         retry();
       });
     } else {
+      retryTimer?.cancel();
       print("Already connected");
     }
   }
@@ -134,6 +137,7 @@ class MPDClient {
   void disconnect() {
     print("disconnect");
 
+    retryTimer?.cancel();
     if (socket != null) {
       socket!.close();
       socket = null;
@@ -142,9 +146,13 @@ class MPDClient {
   }
 
   void retry() {
+    retryTimer?.cancel();
     if (stayConnected) {
       print("retry after $retryInterval");
-      Timer(Duration(seconds: retryInterval), connect);
+      controller.add(Info(
+          connected: false,
+          info: "Trying to connect to server \"$server\" on port $port"));
+      retryTimer = Timer(Duration(seconds: retryInterval), connect);
       if (retryInterval < maxRetryInterval) {
         retryInterval += retryIncrement;
       }
@@ -205,7 +213,7 @@ class MPDClient {
 
   void processState(List<String> lines) {
     print("onState, ${lines.length} lines");
-    var info = Info(); // final info to be sent to the UI
+    var info = Info(connected: true); // final info to be sent to the UI
     var metadata = HashMap<String,
         String>(); // temporary storage of interesting metadata before processing
     var pattern = RegExp(r'^([^:]+): (.*)$');

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mpd_display/main_page.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
@@ -49,6 +50,10 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   int currentScroll = 0;
   int scrollDirection = 1;
   Timer? ticker;
+
+  // used by the dialog to change the MPD server
+  String? mpdServer;
+  int? mpdPort;
 
   _InfoWidgetState() {}
 
@@ -142,13 +147,19 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         },
       ),
       IconButton(
+          onPressed: () {
+            _displayTextInputDialog(context);
+          },
+          icon: const Icon(Icons.settings_ethernet),
+          tooltip: 'Set MPD Server'),
+      IconButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AboutPage()),
           );
         },
-        icon: const Icon(Icons.settings),
+        icon: const Icon(Icons.info),
       ),
     ]; //.map((w) => Transform.scale(scale: 1.5, child: w)).toList();
     var bar = AppBar(
@@ -210,5 +221,71 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   void stopListening() {
     subscription?.pause();
+  }
+
+  TextEditingValue ipPort(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      // we have to allow blanks, otherwise we can't delete the last digit
+      return newValue;
+    }
+    final port = int.tryParse(newValue.text);
+    if (port == null || port <= 0 || port >= 65536) {
+      return oldValue;
+    }
+    return newValue;
+  }
+
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    var oneLine = FilteringTextInputFormatter.singleLineFormatter;
+    var portOnly = TextInputFormatter.withFunction(ipPort);
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('MPD Server'),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextField(
+                    onChanged: (value) {
+                      print("server: $value");
+                      mpdServer = value;
+                    },
+                    inputFormatters: [oneLine],
+                    controller: TextEditingController(text: widget.mpd.server),
+                    decoration: InputDecoration(hintText: "Name or IP address"),
+                  ),
+                  TextField(
+                    onChanged: (value) {
+                      print("port: $value");
+                      mpdPort = int.parse(
+                          value); // no need to catch exception, ipPort() has validated it already
+                    },
+                    inputFormatters: [portOnly],
+                    controller: TextEditingController(text: widget.mpd.port.toString()),
+                    decoration:
+                        InputDecoration(hintText: "Port number (default 6600)"),
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Connect'),
+                onPressed: () {
+                  widget.mpd.changeConnection(mpdServer, mpdPort);
+                  Navigator.pop(context);
+                },
+              ),
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
   }
 }
