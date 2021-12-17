@@ -19,27 +19,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'data_classes.dart';
 import 'main_page.dart';
 
 void main() {
-  runApp(const MpdDisplayApp());
+  runApp(ChangeNotifierProvider(
+      create: (context) => PageState(), child: const MpdDisplayApp()));
 }
 
 class MpdDisplayApp extends StatelessWidget {
   const MpdDisplayApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     // full-screen mode
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    return MaterialApp(
-      title: 'Flutter Demo',
-      // theme: ThemeData(
-      //   primarySwatch: Colors.grey,
-      //   brightness: Brightness.light,
-      //   fontFamily: 'Serif',
-      // ),
+    return const MaterialApp(
+      title: 'MPD Display',
       home: MainPage(title: 'MPD Display'),
     );
   }

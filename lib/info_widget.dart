@@ -20,7 +20,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mpd_display/main_page.dart';
+import 'package:provider/provider.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'title_text.dart';
@@ -28,15 +28,10 @@ import 'subinfo.dart';
 import 'about.dart';
 
 class InfoWidget extends StatefulWidget {
-  InfoWidget(
-      {Key? key,
-      required this.mpd,
-      required this.setThemeCallback,
-      required this.title})
+  InfoWidget({Key? key, required this.mpd, required this.title})
       : super(key: key);
 
   final MPDClient mpd;
-  final void Function(String a) setThemeCallback;
   final String title;
 
   @override
@@ -55,7 +50,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   String? mpdServer;
   int? mpdPort;
 
-  _InfoWidgetState() {}
+  _InfoWidgetState();
 
   @override
   void initState() {
@@ -99,7 +94,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final mainPageData = MainPageData.of(context);
     var actions = <Widget>[
       IconButton(
           onPressed: _state.state == PlayState.stopped
@@ -131,20 +125,22 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           icon: const Icon(Icons.skip_next),
           tooltip: 'Pause'),
       VerticalDivider(),
-      PopupMenuButton<String>(
-        icon: const Icon(Icons.text_format),
-        itemBuilder: (context) {
-          return mainPageData.themeNames
-              .map((name) => CheckedPopupMenuItem(
-                    child: Text(name),
-                    value: name,
-                    checked: name == mainPageData.theme,
-                  ))
-              .toList();
-        },
-        onSelected: (s) {
-          widget.setThemeCallback(s);
-        },
+      Consumer<PageState>(
+        builder: (context, pageState, child) => PopupMenuButton<String>(
+          icon: const Icon(Icons.text_format),
+          itemBuilder: (context) {
+            return pageState.themeNames()
+                .map((name) => CheckedPopupMenuItem(
+                      child: Text(name),
+                      value: name,
+                      checked: name == pageState.themeName,
+                    ))
+                .toList();
+          },
+          onSelected: (s) {
+            pageState.setTheme(s);
+          },
+        ),
       ),
       IconButton(
           onPressed: () {
@@ -263,7 +259,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                           value); // no need to catch exception, ipPort() has validated it already
                     },
                     inputFormatters: [portOnly],
-                    controller: TextEditingController(text: widget.mpd.port.toString()),
+                    controller:
+                        TextEditingController(text: widget.mpd.port.toString()),
                     decoration:
                         InputDecoration(hintText: "Port number (default 6600)"),
                   ),

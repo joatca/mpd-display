@@ -18,6 +18,93 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class InfoTheme {
+  String? font;
+  Color? bgColor;
+  Color? titleColor;
+  Color? infoColor;
+  Color? infoIconColor;
+
+  InfoTheme({
+    this.font,
+    this.bgColor,
+    this.titleColor,
+    this.infoColor,
+    this.infoIconColor,
+  });
+}
+
+class PageState extends ChangeNotifier {
+  String _themeName = "Clean";
+
+  static final _themes = {
+    "Clean": InfoTheme(
+      font: "NotoSans",
+      bgColor: Colors.white,
+      titleColor: Colors.black,
+      infoColor: Colors.black,
+    ),
+    "Clean Dark": InfoTheme(
+      font: "NotoSans",
+      bgColor: Colors.black,
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+    ),
+    "Formal": InfoTheme(
+      font: "NotoSerif",
+      bgColor: Colors.white,
+      titleColor: Colors.black,
+      infoColor: Colors.black,
+    ),
+    "Formal Dark": InfoTheme(
+      font: "NotoSerif",
+      bgColor: Colors.black,
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+      infoIconColor: Colors.white,
+    ),
+    "Baroque": InfoTheme(
+      font: "Garamond",
+      bgColor: Colors.white,
+      titleColor: Colors.black,
+      infoColor: Colors.black,
+    ),
+    "Baroque Dark": InfoTheme(
+      font: "Garamond",
+      bgColor: Colors.black,
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+    ),
+  };
+
+  PageState() : super() {
+    loadTheme();
+  }
+  
+  String get themeName => _themeName;
+  List<String> themeNames() => _themes.keys.toList();
+  String defaultTheme() => _themes.keys.first;
+  InfoTheme? theme() => _themes[themeName];
+
+  void setTheme(String name) {
+    _themeName = name;
+    saveTheme(name);
+    notifyListeners();
+  }
+
+  void saveTheme(String name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme', name);
+  }
+
+  void loadTheme() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('theme') ?? defaultTheme();
+    setTheme(name);
+  }
+}
 
 enum PlayState {
   stopped,
