@@ -32,7 +32,7 @@ class InfoTheme {
   Color? infoIconColor;
   double titleSize;
   double infoSize;
-  double height;
+  double? height;
 
   InfoTheme({
     this.font,
@@ -42,7 +42,7 @@ class InfoTheme {
     this.infoIconColor,
     this.titleSize = _defaultTitleSize,
     this.infoSize = _defaultInfoSize,
-    this.height = 1.0,
+    this.height = null,
   });
 }
 
@@ -55,18 +55,21 @@ class PageState extends ChangeNotifier {
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
+      height: 1.1,
     ),
     "Clean Dark": InfoTheme(
       font: "NotoSans",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
+      height: 1.1,
     ),
     "Formal": InfoTheme(
       font: "NotoSerif",
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
+      height: 1.1,
     ),
     "Formal Dark": InfoTheme(
       font: "NotoSerif",
@@ -74,6 +77,7 @@ class PageState extends ChangeNotifier {
       titleColor: Colors.white,
       infoColor: Colors.white,
       infoIconColor: Colors.white,
+      height: 1.1,
     ),
     "Baroque": InfoTheme(
       font: "Garamond",
@@ -82,6 +86,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.black,
       titleSize: 84,
       infoSize: 68,
+      height: 1.05,
     ),
     "Baroque Dark": InfoTheme(
       font: "Garamond",
@@ -90,6 +95,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.white,
       titleSize: 84,
       infoSize: 68,
+      height: 1.05,
     ),
     "Highway": InfoTheme(
       font: "Interstate",
