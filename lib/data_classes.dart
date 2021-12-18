@@ -77,6 +77,18 @@ class PageState extends ChangeNotifier {
       titleColor: Colors.white,
       infoColor: Colors.white,
     ),
+    "Highway": InfoTheme(
+      font: "Interstate",
+      bgColor: Color(0xff01A775),
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+    ),
+    "Highway Dark": InfoTheme(
+      font: "Interstate",
+      bgColor: Colors.black,
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+    ),
   };
 
   PageState() : super() {

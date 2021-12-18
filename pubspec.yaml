@@ -77,3 +77,6 @@ flutter:
     - family: Garamond
       fonts:
         - asset: fonts/EBGaramond.ttf
+    - family: Interstate
+      fonts:
+        - asset: fonts/Interstate-regular.ttf
