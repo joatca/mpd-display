@@ -32,8 +32,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  static const double _titleSize = 76;
-  static const double _infoSize = 60;
 
   var mpd = MPDClient();
 
@@ -48,12 +46,12 @@ class _MainPageState extends State<MainPage> {
       var textTheme = Theme.of(context).textTheme.copyWith(
             headline1: TextStyle(
               fontFamily: themeInfo?.font,
-              fontSize: _titleSize,
+              fontSize: themeInfo?.titleSize,
               color: themeInfo?.titleColor,
             ),
             headline2: TextStyle(
               fontFamily: themeInfo?.font,
-              fontSize: _infoSize,
+              fontSize: themeInfo?.infoSize,
               color: themeInfo?.infoColor,
             ),
           );

@@ -21,11 +21,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class InfoTheme {
+
+  static const double _defaultTitleSize = 76; // default font sizes unless overridden
+  static const double _defaultInfoSize = 60;
+
   String? font;
   Color? bgColor;
   Color? titleColor;
   Color? infoColor;
   Color? infoIconColor;
+  double titleSize;
+  double infoSize;
 
   InfoTheme({
     this.font,
@@ -33,6 +39,8 @@ class InfoTheme {
     this.titleColor,
     this.infoColor,
     this.infoIconColor,
+    this.titleSize = _defaultTitleSize,
+    this.infoSize = _defaultInfoSize,
   });
 }
 
@@ -70,35 +78,43 @@ class PageState extends ChangeNotifier {
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
+      titleSize: 84,
+      infoSize: 68,
     ),
     "Baroque Dark": InfoTheme(
       font: "Garamond",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
+      titleSize: 84,
+      infoSize: 68,
     ),
     "Highway": InfoTheme(
       font: "Interstate",
       bgColor: Color(0xff01A775),
       titleColor: Colors.white,
       infoColor: Colors.white,
+      titleSize: 80,
+      infoSize: 64,
     ),
     "Highway Dark": InfoTheme(
       font: "Interstate",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
+      titleSize: 80,
+      infoSize: 64,
     ),
   };
 
   PageState() : super() {
     loadTheme();
   }
-  
+
   String get themeName => _themeName;
   List<String> themeNames() => _themes.keys.toList();
   String defaultTheme() => _themes.keys.first;
-  InfoTheme? theme() => _themes[themeName];
+  InfoTheme? theme() => _themes[themeName] ?? InfoTheme();
 
   void setTheme(String name) {
     _themeName = name;
