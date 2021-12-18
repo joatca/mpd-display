@@ -168,12 +168,12 @@ class Info {
   bool repeat = false;
   bool random = false;
   bool single = false;
-  int duration = 0; // milliseconds
-  int elapsed = 0; // milliseconds
-  int timestamp = 0; // when this info was created
+  double duration = 0; // seconds
+  double elapsed = 0; // seconds
+  double timestamp = 0; // when this info was created
 
   Info({this.connected = false, this.info}) {
-    timestamp = DateTime.now().millisecondsSinceEpoch;
+    timestamp = DateTime.now().millisecondsSinceEpoch.toDouble() / 1000;
   }
 
   String toString() {

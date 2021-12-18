@@ -45,7 +45,7 @@ class MPDClient {
   ConnState connstate = ConnState.connecting;
   bool stayConnected = false; // whether to reconnect on failure/disconnect
   late StreamController<Info> controller;
-  var utf8 = Utf8Codec(allowMalformed: true);
+  final utf8 = const Utf8Codec(allowMalformed: true);
 
   MPDClient([this.server = "music", this.port = 6600]) {
     print("created mpd");
@@ -247,10 +247,10 @@ class MPDClient {
             }
             break;
           case "duration":
-            info.duration = (double.parse(value ?? "0") * 1000).round();
+            info.duration = double.parse(value ?? "0");
             break;
           case "elapsed":
-            info.elapsed = (double.parse(value ?? "0") * 1000).round();
+            info.elapsed = double.parse(value ?? "0");
             break;
           case "title":
             info.info = value ?? "?";

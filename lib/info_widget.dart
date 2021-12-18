@@ -21,11 +21,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'title_text.dart';
 import 'subinfo.dart';
 import 'about.dart';
+
+class InfoState {
+  Info info = Info();
+  double virtualElapsed = 0;
+  var sliderUpdateEnabled = true;
+  double currentTime = 0;
+}
 
 class InfoWidget extends StatefulWidget {
   InfoWidget({Key? key, required this.mpd, required this.title})
@@ -39,7 +47,8 @@ class InfoWidget extends StatefulWidget {
 }
 
 class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
-  var _state = Info();
+  var _state = InfoState();
+  final _playTimeFormat = NumberFormat("00", "en_US");
   late Stream<Info> infoStream;
   StreamSubscription<Info>? subscription;
   int currentScroll = 0;
@@ -82,7 +91,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     print("okGo");
     infoStream = widget.mpd.infoStream();
     startListening();
-    ticker = Timer.periodic(Duration(seconds: 5), tickScroll);
+    ticker = Timer.periodic(Duration(milliseconds: 200), tickScroll);
   }
 
   void stopThat() {
@@ -96,14 +105,14 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     var actions = <Widget>[
       IconButton(
-          onPressed: _state.state == PlayState.stopped
+          onPressed: _state.info.state == PlayState.stopped
               ? null
               : () => widget.mpd.sendCommand("previous"),
           icon: const Icon(Icons.skip_previous),
           tooltip: 'Previous'),
       IconButton(
           onPressed: () {
-            switch (_state.state) {
+            switch (_state.info.state) {
               case PlayState.stopped:
                 widget.mpd.sendCommand("play");
                 break;
@@ -114,12 +123,12 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                 widget.mpd.sendCommand("pause 1");
             }
           },
-          icon: _state.state == PlayState.playing
+          icon: _state.info.state == PlayState.playing
               ? Icon(Icons.pause)
               : Icon(Icons.play_arrow),
           tooltip: 'Album'),
       IconButton(
-          onPressed: _state.state == PlayState.stopped
+          onPressed: _state.info.state == PlayState.stopped
               ? null
               : () => widget.mpd.sendCommand("next"),
           icon: const Icon(Icons.skip_next),
@@ -129,7 +138,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         builder: (context, pageState, child) => PopupMenuButton<String>(
           icon: const Icon(Icons.text_format),
           itemBuilder: (context) {
-            return pageState.themeNames()
+            return pageState
+                .themeNames()
                 .map((name) => CheckedPopupMenuItem(
                       child: Text(name),
                       value: name,
@@ -159,7 +169,35 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       ),
     ]; //.map((w) => Transform.scale(scale: 1.5, child: w)).toList();
     var bar = AppBar(
-      title: Text(widget.title),
+      title: Row(
+        children: [
+          playTime(),
+          Expanded(
+            child: Slider(
+                onChangeStart: (startVal) {
+                  _state.sliderUpdateEnabled = false;
+                  _state.virtualElapsed = startVal;
+                },
+                onChanged: (val) {
+                  setState(() {
+                      if (val <= _state.info.duration) {
+                        _state.virtualElapsed = val;
+                      }
+                  });
+                },
+                onChangeEnd: (endVal) {
+                  // sanity check in case the track changed during drag
+                  _state.virtualElapsed = endVal <= _state.info.duration
+                      ? endVal
+                      : _state.info.duration - 0.1;
+                  _state.sliderUpdateEnabled = true;
+                  widget.mpd.sendCommand("seekcur ${_state.virtualElapsed}");
+                },
+                value: _state.virtualElapsed,
+                max: _state.info.duration),
+          ),
+        ],
+      ),
       actions: actions,
     );
     return Scaffold(
@@ -168,28 +206,49 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Container(
-            child: TitleText(state: _state, context: context),
+            child: TitleText(state: _state.info, context: context),
           ),
           Expanded(
-            child: SubInfoList(context: context, subInfos: _state.subInfos),
+            child:
+                SubInfoList(context: context, subInfos: _state.info.subInfos),
           ),
         ],
       ),
     );
   }
 
+  Widget playTime() {
+    final elapsedSeconds = (_state.virtualElapsed.toInt());
+    return Text(
+      "${_playTimeFormat.format(elapsedSeconds ~/ 60)}:${_playTimeFormat.format(elapsedSeconds % 60)}"
+    );
+  }
+
   void tickScroll(Timer timer) async {
-    if (_state.subInfos.isNotEmpty) {
-      currentScroll += 1;
-      if (currentScroll >= _state.subInfos.length) {
-        currentScroll = 0;
-      }
+    if (_state.sliderUpdateEnabled && _state.info.state == PlayState.playing) {
+      setState(() {
+        // always update the current time, we use it whether paused or playing
+        _state.currentTime =
+            DateTime.now().millisecondsSinceEpoch.toDouble() / 1000;
+        // compute the actual elapsed time based on the elapsed value in the info
+        // plus the time difference between when the info was created and now
+        final elapsedOffset = _state.currentTime - _state.info.timestamp;
+        final targetElapsed = _state.info.elapsed + elapsedOffset;
+        // sanity check in case track changed
+        if (targetElapsed <= _state.info.duration) {
+          _state.virtualElapsed = _state.info.elapsed + elapsedOffset;
+        }
+      });
+    }
+    if (_state.info.subInfos.isNotEmpty) {
+      currentScroll =
+          (_state.info.elapsed.round() ~/ 5) % _state.info.subInfos.length;
       scrollTo(currentScroll);
     }
   }
 
   void scrollTo(int pos) async {
-    final cntxt = _state.subInfos[pos].key.currentContext;
+    final cntxt = _state.info.subInfos[pos].key.currentContext;
     if (cntxt != null) {
       Scrollable.ensureVisible(
         cntxt,
@@ -203,9 +262,11 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     if (subscription == null) {
       subscription = infoStream.listen((info) {
         setState(() {
-          _state = info;
+          _state.info = info;
+          if (_state.sliderUpdateEnabled) {
+            _state.virtualElapsed = _state.info.elapsed;
+          }
         });
-        currentScroll = -1;
         scrollTo(0);
       });
     } else {
