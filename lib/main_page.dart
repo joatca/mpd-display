@@ -48,11 +48,13 @@ class _MainPageState extends State<MainPage> {
               fontFamily: themeInfo?.font,
               fontSize: themeInfo?.titleSize,
               color: themeInfo?.titleColor,
+              height: themeInfo?.height,
             ),
             headline2: TextStyle(
               fontFamily: themeInfo?.font,
               fontSize: themeInfo?.infoSize,
               color: themeInfo?.infoColor,
+              height: themeInfo?.height,
             ),
           );
       var iconTheme = Theme.of(context).iconTheme.copyWith(

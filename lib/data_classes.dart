@@ -21,8 +21,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class InfoTheme {
-
-  static const double _defaultTitleSize = 76; // default font sizes unless overridden
+  static const double _defaultTitleSize =
+      76; // default font sizes unless overridden
   static const double _defaultInfoSize = 60;
 
   String? font;
@@ -32,6 +32,7 @@ class InfoTheme {
   Color? infoIconColor;
   double titleSize;
   double infoSize;
+  double height;
 
   InfoTheme({
     this.font,
@@ -41,6 +42,7 @@ class InfoTheme {
     this.infoIconColor,
     this.titleSize = _defaultTitleSize,
     this.infoSize = _defaultInfoSize,
+    this.height = 1.0,
   });
 }
 
