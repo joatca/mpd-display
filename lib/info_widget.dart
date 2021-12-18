@@ -49,7 +49,6 @@ class InfoWidget extends StatefulWidget {
 
 class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   var _state = InfoState();
-  final _playTimeFormat = NumberFormat("00", "en_US");
   late Stream<Info> infoStream;
   StreamSubscription<Info>? subscription;
   int currentScroll = 0;
@@ -92,7 +91,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     print("okGo");
     infoStream = widget.mpd.infoStream();
     startListening();
-    ticker = Timer.periodic(Duration(milliseconds: 200), tickScroll);
+    ticker = Timer.periodic(const Duration(seconds: 1), tickScroll);
   }
 
   void stopThat() {
@@ -172,7 +171,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     var bar = AppBar(
       title: Row(
         children: [
-          playTime(),
           Expanded(
             child: Slider(
                 onChangeStart: (startVal) {
@@ -181,9 +179,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                 },
                 onChanged: (val) {
                   setState(() {
-                      if (val <= _state.info.duration) {
-                        _state.virtualElapsed = val;
-                      }
+                    if (val <= _state.info.duration) {
+                      _state.virtualElapsed = val;
+                    }
                   });
                 },
                 onChangeEnd: (endVal) {
@@ -195,7 +193,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                   widget.mpd.sendCommand("seekcur ${_state.virtualElapsed}");
                 },
                 value: _state.virtualElapsed,
-                max: _state.info.duration),
+                max: _state.info.duration,
+              ),
           ),
         ],
       ),
@@ -218,13 +217,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     );
   }
 
-  Widget playTime() {
-    final elapsedSeconds = (_state.virtualElapsed.toInt());
-    return Text(
-      "${_playTimeFormat.format(elapsedSeconds ~/ 60)}:${_playTimeFormat.format(elapsedSeconds % 60)}"
-    );
-  }
-
   void tickScroll(Timer timer) async {
     if (_state.sliderUpdateEnabled && _state.info.state == PlayState.playing) {
       setState(() {
@@ -242,9 +234,12 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       });
     }
     if (_state.info.subInfos.isNotEmpty) {
-      currentScroll =
-          (_state.info.elapsed.round() ~/ 5) % _state.info.subInfos.length;
-      scrollTo(currentScroll);
+      final wantedScroll = (_state.virtualElapsed ~/ 5)
+          .remainder(_state.info.subInfos.length);
+      if (wantedScroll != currentScroll) {
+        currentScroll = wantedScroll;
+        scrollTo(currentScroll);
+      }
     }
   }
 
@@ -262,18 +257,18 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   void startListening() async {
     if (subscription == null) {
       subscription = infoStream.listen((info) {
-          setState(() {
-              if (info.state == PlayState.playing) {
-                Wakelock.enable();
-              } else {
-                Wakelock.disable();
-              }
-              _state.info = info;
-              if (_state.sliderUpdateEnabled) {
-                _state.virtualElapsed = _state.info.elapsed;
-              }
-          });
-          scrollTo(0);
+        setState(() {
+          if (info.state == PlayState.playing) {
+            Wakelock.enable();
+          } else {
+            Wakelock.disable();
+          }
+          _state.info = info;
+          if (_state.sliderUpdateEnabled) {
+            _state.virtualElapsed = _state.info.elapsed;
+          }
+        });
+        scrollTo(0);
       });
     } else {
       if (subscription?.isPaused ?? false) {

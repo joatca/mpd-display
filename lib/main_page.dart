@@ -32,7 +32,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-
   var mpd = MPDClient();
 
   _MainPageState() {
@@ -64,11 +63,18 @@ class _MainPageState extends State<MainPage> {
             backgroundColor: themeInfo?.bgColor,
             foregroundColor: themeInfo?.titleColor,
           );
+      var sliderColor = themeInfo?.titleColor;
+      var sliderTheme = Theme.of(context).sliderTheme.copyWith(
+            activeTrackColor: sliderColor?.withOpacity(0.8),
+            thumbColor: sliderColor,
+            inactiveTrackColor: sliderColor?.withOpacity(0.4),
+          );
       var theme = Theme.of(context).copyWith(
         textTheme: textTheme,
         scaffoldBackgroundColor: themeInfo?.bgColor,
         iconTheme: iconTheme,
         appBarTheme: appbarTheme,
+        sliderTheme: sliderTheme,
       );
       return Theme(
         data: theme,
