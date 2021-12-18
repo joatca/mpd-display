@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'title_text.dart';
@@ -261,13 +262,18 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   void startListening() async {
     if (subscription == null) {
       subscription = infoStream.listen((info) {
-        setState(() {
-          _state.info = info;
-          if (_state.sliderUpdateEnabled) {
-            _state.virtualElapsed = _state.info.elapsed;
-          }
-        });
-        scrollTo(0);
+          setState(() {
+              if (info.state == PlayState.playing) {
+                Wakelock.enable();
+              } else {
+                Wakelock.disable();
+              }
+              _state.info = info;
+              if (_state.sliderUpdateEnabled) {
+                _state.virtualElapsed = _state.info.elapsed;
+              }
+          });
+          scrollTo(0);
       });
     } else {
       if (subscription?.isPaused ?? false) {
