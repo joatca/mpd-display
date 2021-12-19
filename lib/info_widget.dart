@@ -202,17 +202,19 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     );
     return Scaffold(
       appBar: bar,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            child: TitleText(state: _state.info, context: context),
-          ),
-          Expanded(
-            child:
-                SubInfoList(context: context, subInfos: _state.info.subInfos),
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              child: TitleText(state: _state.info, context: context, box: constraints),
+            ),
+            Expanded(
+              child:
+                  SubInfoList(context: context, subInfos: _state.info.subInfos, box: constraints),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'data_classes.dart';
 
@@ -25,14 +26,23 @@ class SubInfoList extends StatelessWidget {
     Key? key,
     required this.context,
     required this.subInfos,
+    required this.box,
   }) : super(key: key);
 
   final BuildContext context;
   final List<SubInfo> subInfos;
+  final BoxConstraints box;
 
   @override
   Widget build(BuildContext context) {
-    var children = subInfos.map((si) => SubInfoRow(context: context, subInfo: si)).toList();
+    // compute how many subinfo text lines will fit in roughtly half of the screen
+    final theme = Theme.of(context).textTheme.headline2;
+    final double fontSize = (theme?.fontSize ?? 1) * (theme?.height ?? 1);
+    // in case fontSize above was null make lines at least 3
+    final lines = max(3, (box.maxHeight / fontSize / 2).toInt());
+    var children = subInfos
+        .map((si) => SubInfoRow(context: context, subInfo: si, lines: lines))
+        .toList();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -50,10 +60,12 @@ class SubInfoRow extends StatelessWidget {
     Key? key,
     required this.context,
     required this.subInfo,
+    required this.lines,
   }) : super(key: key);
 
   final BuildContext context;
   final SubInfo subInfo;
+  final int lines;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +87,7 @@ class SubInfoRow extends StatelessWidget {
             textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
             softWrap: true,
-            maxLines: 2,
+            maxLines: lines,
             style: Theme.of(context).textTheme.headline2,
           ),
         ),

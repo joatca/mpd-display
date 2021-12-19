@@ -32,7 +32,7 @@ class InfoTheme {
   Color? infoIconColor;
   double titleSize;
   double infoSize;
-  double? height;
+  double height;
 
   InfoTheme({
     this.font,
@@ -42,7 +42,7 @@ class InfoTheme {
     this.infoIconColor,
     this.titleSize = _defaultTitleSize,
     this.infoSize = _defaultInfoSize,
-    this.height = null,
+    this.height = 1.0, // 1.0 is almost always unacceptable but we need a value so we can do lines calculations later
   });
 }
 
@@ -55,14 +55,14 @@ class PageState extends ChangeNotifier {
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
-//      height: 1.20,
+      height: 1.20,
     ),
     "Clean Dark": InfoTheme(
       font: "Cantarell",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
-  //    height: 1.20,
+      height: 1.20,
     ),
     "Formal": InfoTheme(
       font: "NotoSerif",
@@ -104,6 +104,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.white,
       titleSize: 80,
       infoSize: 64,
+      height: 1.0,
     ),
     "Highway Dark": InfoTheme(
       font: "Interstate",
@@ -112,6 +113,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.white,
       titleSize: 80,
       infoSize: 64,
+      height: 1.0,
     ),
   };
 
@@ -155,7 +157,7 @@ enum InfoType {
 }
 
 /*
-Represents a combination of a and a piece of text;
+Represents a combination of a type and a piece of text;
 usually this is something like { Icons.album, "Some album name" }
 */
 class SubInfo {
