@@ -41,8 +41,8 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<PageState>(builder: (context, pageState, child) {
-      var themeInfo = pageState.theme();
-      var textTheme = Theme.of(context).textTheme.copyWith(
+      final themeInfo = pageState.theme();
+      final textTheme = Theme.of(context).textTheme.copyWith(
             headline1: TextStyle(
               fontFamily: themeInfo?.font,
               fontSize: themeInfo?.titleSize,
@@ -56,20 +56,20 @@ class _MainPageState extends State<MainPage> {
               height: themeInfo?.height,
             ),
           );
-      var iconTheme = Theme.of(context).iconTheme.copyWith(
+      final iconTheme = Theme.of(context).iconTheme.copyWith(
             color: themeInfo?.infoIconColor ?? themeInfo?.infoColor,
           );
-      var appbarTheme = Theme.of(context).appBarTheme.copyWith(
+      final appbarTheme = Theme.of(context).appBarTheme.copyWith(
             backgroundColor: themeInfo?.bgColor,
             foregroundColor: themeInfo?.titleColor,
           );
-      var sliderColor = themeInfo?.titleColor;
-      var sliderTheme = Theme.of(context).sliderTheme.copyWith(
+      final sliderColor = themeInfo?.titleColor;
+      final sliderTheme = Theme.of(context).sliderTheme.copyWith(
             activeTrackColor: sliderColor?.withOpacity(0.8),
             thumbColor: sliderColor,
             inactiveTrackColor: sliderColor?.withOpacity(0.4),
           );
-      var theme = Theme.of(context).copyWith(
+      final theme = Theme.of(context).copyWith(
         textTheme: textTheme,
         scaffoldBackgroundColor: themeInfo?.bgColor,
         iconTheme: iconTheme,
