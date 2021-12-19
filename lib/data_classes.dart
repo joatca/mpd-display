@@ -55,21 +55,21 @@ class PageState extends ChangeNotifier {
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
-      height: 1.1,
+      height: 1.20,
     ),
     "Clean Dark": InfoTheme(
       font: "NotoSans",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
-      height: 1.1,
+      height: 1.20,
     ),
     "Formal": InfoTheme(
       font: "NotoSerif",
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
-      height: 1.1,
+      height: 1.20,
     ),
     "Formal Dark": InfoTheme(
       font: "NotoSerif",
@@ -77,7 +77,7 @@ class PageState extends ChangeNotifier {
       titleColor: Colors.white,
       infoColor: Colors.white,
       infoIconColor: Colors.white,
-      height: 1.1,
+      height: 1.20,
     ),
     "Baroque": InfoTheme(
       font: "Garamond",
@@ -86,7 +86,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.black,
       titleSize: 84,
       infoSize: 68,
-      height: 1.05,
+      height: 1.1,
     ),
     "Baroque Dark": InfoTheme(
       font: "Garamond",
@@ -95,7 +95,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.white,
       titleSize: 84,
       infoSize: 68,
-      height: 1.05,
+      height: 1.1,
     ),
     "Highway": InfoTheme(
       font: "Interstate",
