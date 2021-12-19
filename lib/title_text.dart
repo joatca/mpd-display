@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'data_classes.dart';
 
@@ -25,20 +26,28 @@ class TitleText extends StatelessWidget {
     Key? key,
     required Info state,
     required this.context,
-  }) : _info = state, super(key: key);
+    required this.box,
+  })  : _info = state,
+        super(key: key);
 
   final Info _info;
   final BuildContext context;
+  final BoxConstraints box;
 
   @override
   Widget build(BuildContext context) {
+    // compute how many title text lines will fit in roughtly half of the screen
+    final theme = Theme.of(context).textTheme.headline1;
+    final double fontSize = (theme?.fontSize ?? 1) * (theme?.height ?? 1);
+    // in case fontSize above was null make lines at least 3
+    final lines = max(3, (box.maxHeight / fontSize / 2).toInt());
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         _info.info ?? "-",
         textAlign: TextAlign.center,
         softWrap: true,
-        maxLines: 3,
+        maxLines: lines,
         overflow: TextOverflow.fade,
         style: Theme.of(context).textTheme.headline1,
       ),
