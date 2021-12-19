@@ -51,18 +51,18 @@ class PageState extends ChangeNotifier {
 
   static final _themes = {
     "Clean": InfoTheme(
-      font: "NotoSans",
+      font: "Cantarell",
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
-      height: 1.20,
+//      height: 1.20,
     ),
     "Clean Dark": InfoTheme(
-      font: "NotoSans",
+      font: "Cantarell",
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
-      height: 1.20,
+  //    height: 1.20,
     ),
     "Formal": InfoTheme(
       font: "NotoSerif",
