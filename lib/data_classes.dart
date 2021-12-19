@@ -182,6 +182,12 @@ class Info {
     timestamp = DateTime.now().millisecondsSinceEpoch.toDouble() / 1000;
   }
 
+  void addAll(InfoType type, List<String>? vals) {
+    for (final val in vals ?? []) {
+      subInfos.add(SubInfo(type, val));
+    }
+  }
+
   String toString() {
     return "info $info subinfos ${subInfos.length}${repeat ? " [Rpt]" : ""}${random ? " [Rnd]" : ""}${single ? " [Sgl]" : ""}";
   }

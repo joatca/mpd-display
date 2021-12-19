@@ -22,6 +22,8 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:collection';
+import 'package:flutter/foundation.dart';
+
 import 'data_classes.dart';
 
 /* this data class connects to an MPD server and sends play state data on the supplied stream */
@@ -214,11 +216,13 @@ class MPDClient {
   void processState(List<String> lines) {
     print("onState, ${lines.length} lines");
     var info = Info(connected: true); // final info to be sent to the UI
-    var metadata = HashMap<String,
-        String>(); // temporary storage of interesting metadata before processing
+    var md = HashMap<
+        String,
+        List<
+            String>>(); // temporary storage of interesting metadata before processing
     var pattern = RegExp(r'^([^:]+): (.*)$');
     for (var line in lines) {
-      //print(line);
+      print(line);
       var match = pattern.firstMatch(line);
       if (match != null && match.groupCount == 2) {
         var key = (match.group(1) ?? "").toLowerCase();
@@ -260,7 +264,7 @@ class MPDClient {
           case "albumartist":
           case "composer":
           case "performer":
-            metadata[key] = value ?? "?";
+            md.putIfAbsent(key, () => []).add(value ?? "?");
             break;
         }
       }
@@ -269,42 +273,26 @@ class MPDClient {
     // for classical sometimes the artist tag contains the composer and
     // sometimes the performer; let's handle those situations as sensibly as
     // possible
-    if (metadata.containsKey("composer")) {
-      if (metadata["composer"] == metadata["artist"]) {
-        // only show it once, as a composer tag
-        info.subInfos
-            .add(SubInfo(InfoType.composer, metadata["composer"] ?? ""));
-      } else {
-        // otherwise show them separately
-        info.subInfos
-            .add(SubInfo(InfoType.composer, metadata["composer"] ?? ""));
-        // but only show the artist if it actually exists
-        if (metadata.containsKey("artist")) {
-          info.subInfos
-              .add(SubInfo(InfoType.performer, metadata["artist"] ?? ""));
-        }
-      }
-    } else {
-      // no composer, show just the artist
-      if (metadata.containsKey("artist")) {
-        info.subInfos
-            .add(SubInfo(InfoType.performer, metadata["artist"] ?? ""));
-      }
+    // delete artist if the same as composer or performer
+    if (listEquals(md["artist"], md["composer"]) ||
+        listEquals(md["artist"], md["performer"])) {
+      md.remove("artist");
     }
-    if (metadata.containsKey("performer")) {
-      info.subInfos
-          .add(SubInfo(InfoType.performer, metadata["performer"] ?? "?"));
-    } else if (metadata.containsKey("albumartist") &&
-        metadata["albumartist"] != metadata["artist"]) {
-      info.subInfos
-          .add(SubInfo(InfoType.performer, metadata["albumartist"] ?? "?"));
+    // delete albumartist if the same as any other artisty thing
+    if (listEquals(md["albumartist"], md["performer"]) ||
+        listEquals(md["albumartist"], md["artist"]) ||
+        listEquals(md["albumartist"], md["composer"])) {
+      md.remove("albumartist");
     }
-    if (metadata.containsKey("album")) {
-      info.subInfos.add(SubInfo(InfoType.album, metadata["album"] ?? "?"));
-    }
+    // the addAll methods handle nulls and empty lists as no-ops, the clever logic is the deletion and renaming above
+    info.addAll(InfoType.composer, md["composer"]);
+    info.addAll(InfoType.performer, md["artist"]);
+    info.addAll(InfoType.performer, md["performer"]);
+    info.addAll(InfoType.performer, md["albumartist"]);
+    info.addAll(InfoType.album, md["album"]);
     controller.add(info);
     print("Info: $info");
-    print("Metadata: $metadata");
+    print("Metadata: $md");
     goIdle();
   }
 
