@@ -21,7 +21,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
