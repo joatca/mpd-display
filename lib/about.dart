@@ -107,7 +107,6 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
   }
 
   _launchURL(String url) async {
-    print("launching $url");
     if (await canLaunch(url)) {
       await launch(url);
     } else {

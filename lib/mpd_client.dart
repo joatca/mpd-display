@@ -50,7 +50,6 @@ class MPDClient {
   final utf8 = const Utf8Codec(allowMalformed: true);
 
   MPDClient([this.server = "music", this.port = 6600]) {
-    print("created mpd");
     controller = StreamController<Info>(
         onListen: connect,
         onPause: disconnect,
@@ -66,10 +65,8 @@ class MPDClient {
     stayConnected = true;
     if (socket == null) {
       // only connect if we aren't already connected
-      print("Destination Address: $server:$port");
       Socket.connect(server, port, timeout: Duration(seconds: 5)).then((sock) {
         retryTimer?.cancel();
-        print("Connected to ${sock.remoteAddress.address}:${sock.remotePort}");
         retryInterval = minRetryInterval;
         sock.listen(
           onData,
@@ -79,12 +76,10 @@ class MPDClient {
         socket = sock;
         connstate = ConnState.connecting;
       }).catchError((e) {
-        print("Connection error: ${e.toString()}");
         retry();
       });
     } else {
       retryTimer?.cancel();
-      print("Already connected");
     }
   }
 
@@ -114,13 +109,11 @@ class MPDClient {
   }
 
   void onDone() {
-    print("Connection has terminated");
     socket = null;
     retry();
   }
 
   void onError(e) {
-    print("onError: $e");
     socket = null;
     retry();
   }
@@ -137,8 +130,6 @@ class MPDClient {
   }
 
   void disconnect() {
-    print("disconnect");
-
     retryTimer?.cancel();
     if (socket != null) {
       socket!.close();
@@ -150,7 +141,6 @@ class MPDClient {
   void retry() {
     retryTimer?.cancel();
     if (stayConnected) {
-      print("retry after $retryInterval");
       controller.add(Info(
           connected: false,
           info: "Trying to connect to server \"$server\" on port $port"));
@@ -170,7 +160,6 @@ class MPDClient {
 
   void processConnecting(lines) {
     if (lines.length == 0) {
-      print("Connected, request status");
       getStatus();
     } else {
       resetConnection();
@@ -178,12 +167,11 @@ class MPDClient {
   }
 
   void resetConnection() {
-    print("Resetting connection");
-    // TODO: implement reconnect retry logic
+    disconnect();
+    connect();
   }
 
   void processCommand(List<String> lines) {
-    print("onCommand, ${lines.length} lines");
     if (lines.length == 1 && lines.first == "OK") {
       goIdle();
     } else {
@@ -192,7 +180,6 @@ class MPDClient {
   }
 
   void processIdle(List<String> lines) {
-    print("onIdle, ${lines.length} lines");
     var changed = false;
     for (var element in lines) {
       var match = RegExp(r"^changed: (.*)$").firstMatch(element);
@@ -214,7 +201,6 @@ class MPDClient {
   }
 
   void processState(List<String> lines) {
-    print("onState, ${lines.length} lines");
     var info = Info(connected: true); // final info to be sent to the UI
     var md = HashMap<
         String,
@@ -222,7 +208,6 @@ class MPDClient {
             String>>(); // temporary storage of interesting metadata before processing
     var pattern = RegExp(r'^([^:]+): (.*)$');
     for (var line in lines) {
-      print(line);
       var match = pattern.firstMatch(line);
       if (match != null && match.groupCount == 2) {
         var key = (match.group(1) ?? "").toLowerCase();
@@ -291,19 +276,15 @@ class MPDClient {
     info.addAll(InfoType.performer, md["albumartist"]);
     info.addAll(InfoType.album, md["album"]);
     controller.add(info);
-    print("Info: $info");
-    print("Metadata: $md");
     goIdle();
   }
 
   void goIdle() {
-    print("goIdle");
     sendCommand("idle player");
     connstate = ConnState.idle;
   }
 
   void getStatus() {
-    print("getStatus");
     sendCommand("command_list_begin\nstatus\ncurrentsong\ncommand_list_end");
     connstate = ConnState.readstate;
   }

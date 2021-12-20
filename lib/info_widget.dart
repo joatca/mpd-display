@@ -83,11 +83,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       okGo();
     }
-    print('AppLifecycleState state:  $state');
   }
 
   void okGo() {
-    print("okGo");
     infoStream = widget.mpd.infoStream();
     startListening();
     ticker = Timer.periodic(const Duration(seconds: 1), tickScroll);
@@ -97,7 +95,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     ticker?.cancel();
     ticker = null;
     stopListening();
-    print("stopThat");
   }
 
   @override
@@ -314,7 +311,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                 children: [
                   TextField(
                     onChanged: (value) {
-                      print("server: $value");
                       mpdServer = value;
                     },
                     inputFormatters: [oneLine],
@@ -323,7 +319,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                   ),
                   TextField(
                     onChanged: (value) {
-                      print("port: $value");
                       mpdPort = int.parse(
                           value); // no need to catch exception, ipPort() has validated it already
                     },
