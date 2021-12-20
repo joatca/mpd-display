@@ -30,7 +30,7 @@ import 'about.dart';
 
 class InfoState {
   Info info = Info();
-  double virtualElapsed = 0;
+  double estimatedElapsed = 0;
   var sliderUpdateEnabled = true;
   double currentTime = 0;
 }
@@ -174,12 +174,12 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             child: Slider(
               onChangeStart: (startVal) {
                 _state.sliderUpdateEnabled = false;
-                _state.virtualElapsed = startVal;
+                _state.estimatedElapsed = startVal;
               },
               onChanged: (val) {
                 if (val <= _state.info.duration) {
                   setState(() {
-                    _state.virtualElapsed = val;
+                    _state.estimatedElapsed = val;
                   });
                 } else {
                   // if the value is greater than the duration then something weird happened, resync the current status
@@ -188,13 +188,13 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
               },
               onChangeEnd: (endVal) {
                 // sanity check in case the track changed during drag
-                _state.virtualElapsed = endVal <= _state.info.duration
+                _state.estimatedElapsed = endVal <= _state.info.duration
                     ? endVal
                     : _state.info.duration - 0.1;
                 _state.sliderUpdateEnabled = true;
-                widget.mpd.sendCommand("seekcur ${_state.virtualElapsed}");
+                widget.mpd.sendCommand("seekcur ${_state.estimatedElapsed}");
               },
-              value: _state.virtualElapsed,
+              value: _state.estimatedElapsed,
               max: _state.info.duration,
             ),
           ),
@@ -236,13 +236,13 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         final targetElapsed = _state.info.elapsed + elapsedOffset;
         // sanity check in case track changed
         if (targetElapsed <= _state.info.duration) {
-          _state.virtualElapsed = _state.info.elapsed + elapsedOffset;
+          _state.estimatedElapsed = _state.info.elapsed + elapsedOffset;
         }
       });
     }
     if (_state.info.subInfos.isNotEmpty) {
       final wantedScroll =
-          (_state.virtualElapsed ~/ 5).remainder(_state.info.subInfos.length);
+          (_state.estimatedElapsed ~/ 5).remainder(_state.info.subInfos.length);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
         scrollTo(currentScroll);
@@ -272,7 +272,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           }
           _state.info = info;
           if (_state.sliderUpdateEnabled) {
-            _state.virtualElapsed = _state.info.elapsed;
+            _state.estimatedElapsed = _state.info.elapsed;
           }
         });
         scrollTo(0);
