@@ -254,7 +254,7 @@ class MPDClient {
         }
       }
     }
-    // check various metadata scenarios
+    // check various metadata scenarios, but only if state isn't stopped
     // for classical sometimes the artist tag contains the composer and
     // sometimes the performer; let's handle those situations as sensibly as
     // possible

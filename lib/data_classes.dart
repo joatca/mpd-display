@@ -42,7 +42,8 @@ class InfoTheme {
     this.infoIconColor,
     this.titleSize = _defaultTitleSize,
     this.infoSize = _defaultInfoSize,
-    this.height = 1.0, // 1.0 is almost always unacceptable but we need a value so we can do lines calculations later
+    this.height =
+        1.0, // 1.0 is almost always unacceptable but we need a value so we can do lines calculations later
   });
 }
 
@@ -189,6 +190,8 @@ class Info {
       subInfos.add(SubInfo(type, val));
     }
   }
+
+  bool isEmpty() => info == null && subInfos.isEmpty;
 
   String toString() {
     return "info $info subinfos ${subInfos.length}${repeat ? " [Rpt]" : ""}${random ? " [Rnd]" : ""}${single ? " [Sgl]" : ""}";

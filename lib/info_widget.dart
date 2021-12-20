@@ -192,7 +192,11 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
                 widget.mpd.sendCommand("seekcur ${_state.estimatedElapsed}");
               },
               value: _state.estimatedElapsed,
-              max: _state.info.duration,
+              min: 0,
+              // if min == max, slider is disabled, so force that if we are stopped
+              max: _state.info.state == PlayState.stopped
+                  ? 0
+                  : _state.info.duration,
             ),
           ),
         ],
@@ -202,21 +206,34 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     return Scaffold(
       appBar: bar,
       body: LayoutBuilder(
-        builder: (context, constraints) => Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              child: TitleText(
-                  state: _state.info, context: context, box: constraints),
-            ),
-            Expanded(
-              child: SubInfoList(
-                  context: context,
-                  subInfos: _state.info.subInfos,
-                  box: constraints),
-            ),
-          ],
+        builder: (context, constraints) => _state.info.isEmpty()
+            ? emptyLayout(context, constraints)
+            : playingLayout(context, constraints, _state.info),
+      ),
+    );
+  }
+
+  Widget playingLayout(
+      BuildContext context, BoxConstraints constraints, Info info) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          child: TitleText(state: info, context: context, box: constraints),
         ),
+        Expanded(
+          child: SubInfoList(
+              context: context, subInfos: info.subInfos, box: constraints),
+        ),
+      ],
+    );
+  }
+
+  Widget emptyLayout(BuildContext context, BoxConstraints constraints) {
+    return const Center(
+      child: Icon(
+        Icons.clear,
+        size: 50,
       ),
     );
   }
@@ -237,7 +254,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         }
       });
     }
-    if (_state.info.subInfos.isNotEmpty) {
+    if (!_state.info.isEmpty()) {
       final wantedScroll =
           (_state.estimatedElapsed ~/ 5).remainder(_state.info.subInfos.length);
       if (wantedScroll != currentScroll) {
@@ -272,7 +289,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             _state.estimatedElapsed = _state.info.elapsed;
           }
         });
-        scrollTo(0);
+        if (info.state != PlayState.stopped) {
+          scrollTo(0);
+        }
       });
     } else {
       if (subscription?.isPaused ?? false) {
