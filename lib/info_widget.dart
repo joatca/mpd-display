@@ -172,28 +172,31 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         children: [
           Expanded(
             child: Slider(
-                onChangeStart: (startVal) {
-                  _state.sliderUpdateEnabled = false;
-                  _state.virtualElapsed = startVal;
-                },
-                onChanged: (val) {
+              onChangeStart: (startVal) {
+                _state.sliderUpdateEnabled = false;
+                _state.virtualElapsed = startVal;
+              },
+              onChanged: (val) {
+                if (val <= _state.info.duration) {
                   setState(() {
-                    if (val <= _state.info.duration) {
-                      _state.virtualElapsed = val;
-                    }
+                    _state.virtualElapsed = val;
                   });
-                },
-                onChangeEnd: (endVal) {
-                  // sanity check in case the track changed during drag
-                  _state.virtualElapsed = endVal <= _state.info.duration
-                      ? endVal
-                      : _state.info.duration - 0.1;
-                  _state.sliderUpdateEnabled = true;
-                  widget.mpd.sendCommand("seekcur ${_state.virtualElapsed}");
-                },
-                value: _state.virtualElapsed,
-                max: _state.info.duration,
-              ),
+                } else {
+                  // if the value is greater than the duration then something weird happened, resync the current status
+                  widget.mpd.getStatus();
+                }
+              },
+              onChangeEnd: (endVal) {
+                // sanity check in case the track changed during drag
+                _state.virtualElapsed = endVal <= _state.info.duration
+                    ? endVal
+                    : _state.info.duration - 0.1;
+                _state.sliderUpdateEnabled = true;
+                widget.mpd.sendCommand("seekcur ${_state.virtualElapsed}");
+              },
+              value: _state.virtualElapsed,
+              max: _state.info.duration,
+            ),
           ),
         ],
       ),
@@ -206,11 +209,14 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Container(
-              child: TitleText(state: _state.info, context: context, box: constraints),
+              child: TitleText(
+                  state: _state.info, context: context, box: constraints),
             ),
             Expanded(
-              child:
-                  SubInfoList(context: context, subInfos: _state.info.subInfos, box: constraints),
+              child: SubInfoList(
+                  context: context,
+                  subInfos: _state.info.subInfos,
+                  box: constraints),
             ),
           ],
         ),
@@ -235,8 +241,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       });
     }
     if (_state.info.subInfos.isNotEmpty) {
-      final wantedScroll = (_state.virtualElapsed ~/ 5)
-          .remainder(_state.info.subInfos.length);
+      final wantedScroll =
+          (_state.virtualElapsed ~/ 5).remainder(_state.info.subInfos.length);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
         scrollTo(currentScroll);
