@@ -232,8 +232,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   Widget emptyLayout(BuildContext context, BoxConstraints constraints) {
     return const Center(
       child: Icon(
-        Icons.clear,
-        size: 50,
+        Icons.queue_music,
+        size: 150,
       ),
     );
   }
