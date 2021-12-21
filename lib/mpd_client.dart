@@ -23,6 +23,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data_classes.dart';
 
@@ -55,6 +56,7 @@ class MPDClient {
         onPause: disconnect,
         onResume: connect,
         onCancel: disconnect);
+    getServer(); // asynchronously fetches server information
   }
 
   Stream<Info> infoStream() {
@@ -104,7 +106,7 @@ class MPDClient {
       }
     } else {
       // assume last line was ACK-something - maybe deal with partial data here
-      resetConnection();
+      reconnect();
     }
   }
 
@@ -118,16 +120,40 @@ class MPDClient {
     retry();
   }
 
-  void changeConnection(String? server, int? port) {
-    disconnect();
+  void getServer() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    server = prefs.getString('server') ?? "music";
+    port = prefs.getInt('port') ?? 6600;
+    if (stayConnected) {
+      reconnect();
+    }
+  }
+
+  void setServer(String? server, int? port) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     if (server != null) {
+      await prefs.setString("server", server);
       this.server = server;
     }
     if (port != null) {
+      await prefs.setInt("port", port);
       this.port = port;
     }
-    connect();
+    if (stayConnected) {
+      reconnect();
+    }
   }
+
+  // void changeConnection(String? server, int? port) {
+  //   disconnect();
+  //   if (server != null) {
+  //     this.server = server;
+  //   }
+  //   if (port != null) {
+  //     this.port = port;
+  //   }
+  //   connect();
+  // }
 
   void disconnect() {
     retryTimer?.cancel();
@@ -162,11 +188,11 @@ class MPDClient {
     if (lines.length == 0) {
       getStatus();
     } else {
-      resetConnection();
+      reconnect();
     }
   }
 
-  void resetConnection() {
+  void reconnect() {
     disconnect();
     connect();
   }
@@ -175,7 +201,7 @@ class MPDClient {
     if (lines.length == 1 && lines.first == "OK") {
       goIdle();
     } else {
-      resetConnection();
+      reconnect();
     }
   }
 
