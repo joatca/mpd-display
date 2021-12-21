@@ -99,34 +99,45 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    var actions = <Widget>[
+    return Scaffold(
+      appBar: infoAppBar(_state, widget.mpd),
+      body: LayoutBuilder(
+        builder: (context, constraints) => _state.info.isEmpty()
+            ? emptyLayout(context, constraints)
+            : playingLayout(context, constraints, _state.info),
+      ),
+    );
+  }
+
+  AppBar infoAppBar(InfoState infoState, MPDClient mpd) {
+        final actions = <Widget>[
       IconButton(
-          onPressed: _state.info.state == PlayState.stopped
+          onPressed: infoState.info.state == PlayState.stopped
               ? null
-              : () => widget.mpd.sendCommand("previous"),
+              : () => mpd.sendCommand("previous"),
           icon: const Icon(Icons.skip_previous),
           tooltip: 'Previous'),
       IconButton(
           onPressed: () {
-            switch (_state.info.state) {
+            switch (infoState.info.state) {
               case PlayState.stopped:
-                widget.mpd.sendCommand("play");
+                mpd.sendCommand("play");
                 break;
               case PlayState.paused:
-                widget.mpd.sendCommand("pause 0");
+                mpd.sendCommand("pause 0");
                 break;
               case PlayState.playing:
-                widget.mpd.sendCommand("pause 1");
+                mpd.sendCommand("pause 1");
             }
           },
-          icon: _state.info.state == PlayState.playing
+          icon: infoState.info.state == PlayState.playing
               ? Icon(Icons.pause)
               : Icon(Icons.play_arrow),
           tooltip: 'Album'),
       IconButton(
-          onPressed: _state.info.state == PlayState.stopped
+          onPressed: infoState.info.state == PlayState.stopped
               ? null
-              : () => widget.mpd.sendCommand("next"),
+              : () => mpd.sendCommand("next"),
           icon: const Icon(Icons.skip_next),
           tooltip: 'Pause'),
       VerticalDivider(),
@@ -164,55 +175,47 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         icon: const Icon(Icons.info),
       ),
     ]; //.map((w) => Transform.scale(scale: 1.5, child: w)).toList();
-    var bar = AppBar(
+    return AppBar(
       title: Row(
         children: [
           Expanded(
             child: Slider(
               onChangeStart: (startVal) {
-                _state.sliderUpdateEnabled = false;
-                _state.estimatedElapsed = startVal;
+                infoState.sliderUpdateEnabled = false;
+                infoState.estimatedElapsed = startVal;
               },
               onChanged: (val) {
-                if (val <= _state.info.duration) {
+                if (val <= infoState.info.duration) {
                   setState(() {
-                    _state.estimatedElapsed = val;
+                    infoState.estimatedElapsed = val;
                   });
                 } else {
                   // if the value is greater than the duration then something weird happened, resync the current status
-                  widget.mpd.getStatus();
+                  mpd.getStatus();
                 }
               },
               onChangeEnd: (endVal) {
                 // sanity check in case the track changed during drag
-                _state.estimatedElapsed = endVal <= _state.info.duration
+                infoState.estimatedElapsed = endVal <= infoState.info.duration
                     ? endVal
-                    : _state.info.duration - 0.1;
-                _state.sliderUpdateEnabled = true;
-                widget.mpd.sendCommand("seekcur ${_state.estimatedElapsed}");
+                    : infoState.info.duration - 0.1;
+                infoState.sliderUpdateEnabled = true;
+                mpd.sendCommand("seekcur ${infoState.estimatedElapsed}");
               },
-              value: _state.estimatedElapsed,
+              value: infoState.estimatedElapsed,
               min: 0,
               // if min == max, slider is disabled, so force that if we are stopped
-              max: _state.info.state == PlayState.stopped
+              max: infoState.info.state == PlayState.stopped
                   ? 0
-                  : _state.info.duration,
+                  : infoState.info.duration,
             ),
           ),
         ],
       ),
       actions: actions,
     );
-    return Scaffold(
-      appBar: bar,
-      body: LayoutBuilder(
-        builder: (context, constraints) => _state.info.isEmpty()
-            ? emptyLayout(context, constraints)
-            : playingLayout(context, constraints, _state.info),
-      ),
-    );
   }
-
+  
   Widget playingLayout(
       BuildContext context, BoxConstraints constraints, Info info) {
     return Column(
@@ -254,7 +257,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         }
       });
     }
-    if (!_state.info.isEmpty()) {
+    if (_state.info.subInfos.isNotEmpty) {
       final wantedScroll =
           (_state.estimatedElapsed ~/ 5).remainder(_state.info.subInfos.length);
       if (wantedScroll != currentScroll) {
@@ -354,7 +357,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
               TextButton(
                 child: Text('Connect'),
                 onPressed: () {
-                  widget.mpd.changeConnection(mpdServer, mpdPort);
+                  widget.mpd.setServer(mpdServer, mpdPort);
                   Navigator.pop(context);
                 },
               ),
