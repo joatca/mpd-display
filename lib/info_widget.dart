@@ -138,7 +138,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   }
 
   Widget emptyLayout(
-    BuildContext context, BoxConstraints constraints, IconData icon) {
+      BuildContext context, BoxConstraints constraints, IconData icon) {
     final textStyle = Theme.of(context).textTheme.headline1;
     return Center(
       child: Column(
@@ -147,8 +147,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             icon,
             size: textStyle?.fontSize,
           ),
-          Text("${widget.mpd.server}:${widget.mpd.port}",
-              style: textStyle),
+          Text("${widget.mpd.server}:${widget.mpd.port}", style: textStyle),
         ],
       ),
     );
@@ -205,7 +204,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             _state.estimatedElapsed = _state.info.elapsed;
           }
         });
-        if (info.state != PlayState.stopped) {
+        if (info.state != PlayState.stopped && info.subInfos.isNotEmpty) {
           scrollTo(0);
         }
       });
