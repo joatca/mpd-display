@@ -109,27 +109,30 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           Expanded(
-            child: Slider(
-              onChangeStart: (startVal) {
-                infoState.sliderUpdateEnabled = false;
-                infoState.estimatedElapsed = startVal;
-              },
-              onChanged: onSliderChanged,
-              onChangeEnd: (endVal) {
-                // sanity check in case the track changed during drag
-                infoState.estimatedElapsed = endVal <= infoState.info.duration
-                    ? endVal
-                    : infoState.info.duration - 0.1;
-                infoState.sliderUpdateEnabled = true;
-                mpd.sendCommand("seekcur ${infoState.estimatedElapsed}");
-              },
-              value: infoState.estimatedElapsed,
-              min: 0,
-              // if min == max, slider is disabled, so force that if we are stopped
-              max: infoState.info.state == PlayState.stopped
-                  ? 0
-                  : infoState.info.duration,
-            ),
+            child: infoState.info.duration > 0
+                ? Slider(
+                    onChangeStart: (startVal) {
+                      infoState.sliderUpdateEnabled = false;
+                      infoState.estimatedElapsed = startVal;
+                    },
+                    onChanged: onSliderChanged,
+                    onChangeEnd: (endVal) {
+                      // sanity check in case the track changed during drag
+                      infoState.estimatedElapsed =
+                          endVal <= infoState.info.duration
+                              ? endVal
+                              : infoState.info.duration - 0.1;
+                      infoState.sliderUpdateEnabled = true;
+                      mpd.sendCommand("seekcur ${infoState.estimatedElapsed}");
+                    },
+                    value: infoState.estimatedElapsed,
+                    min: 0,
+                    // if min == max, slider is disabled, so force that if we are stopped
+                    max: infoState.info.state == PlayState.stopped
+                        ? 0
+                        : infoState.info.duration,
+                  )
+                : Container(),
           ),
         ],
       ),
@@ -152,7 +155,7 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
     return newValue;
   }
-  
+
   Future<void> _displayTextInputDialog(
       BuildContext context, MPDClient mpd) async {
     var oneLine = FilteringTextInputFormatter.singleLineFormatter;
