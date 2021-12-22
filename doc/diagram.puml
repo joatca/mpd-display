@@ -5,39 +5,40 @@
 skinparam defaultTextAlignment center
 skinparam RectangleBackgroundColor white
 skinparam DatabaseBackgroundColor white
-skinparam CloudBackgroundColor white
+skinparam AgentBackgroundColor white
 skinparam ArrowColor black
 
 !include <material/common>
-!include <material/amplifier>
 !include <material/speaker>
 !include <material/library_music>
 !include <material/server>
 !include <material/raspberrypi>
 !include <material/wifi>
 !include <material/tablet_android>
+!include <material/laptop>
 !include <material/usb>
 !include <material/vector_rectangle>
 !include <office/Devices/switch>
 !include raspberry-pi.puml
-!include dac.puml
-database music as "Music Source\n<$ma_library_music>"
-cloud network as "<$ma_wifi>\nNetwork"
-label pi as "<$raspberry-pi,scale=.8,color=crimson>\nmoOde/\nVolumio/\nMPD"
-label dac as "<$dac,scale=0.3>\nDAC"
-label amp as "<$ma_amplifier>\nAmplifier"
-label sp1 as "<$ma_speaker>\nSpeaker L"
-label sp2 as "<$ma_speaker>\nSpeaker R"
-label tablet as "<$ma_tablet_android,color=green>\nMPD Display"
 
-music <--> network
-network <--> tablet
-network <--> pi
-music <-.-> pi #green
-pi <-.-> tablet #green
-pi --> dac : "USB\n<$ma_usb,scale=0.5>"
-dac --> amp
-amp --> sp1
-amp --> sp2
+together {
+label browser as "<$ma_laptop>\nPhone/Laptop"
+database music as "Music Source\n<$ma_library_music>"
+}
+frame pi as "<$raspberry-pi,scale=.5> Raspberry Pi" {
+  agent mpd as "MPD"
+  agent moode as "moOde Web"
+  agent wakeup as "Wake-up\nscript"
+}
+label sound as "<$ma_speaker>\nSound System"
+label mpddisp as "<$ma_tablet_android>\nMPD Display"
+
+browser <-.-> moode
+moode <--> mpd
+music -.-> mpd
+mpd --> sound : "DAC/RCA"
+mpd <-.-> mpddisp
+wakeup <--> mpd
+wakeup --> mpddisp
 
 @enduml
