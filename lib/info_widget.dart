@@ -123,17 +123,19 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   Widget playingLayout(
       BuildContext context, BoxConstraints constraints, Info info) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
-        Container(
-          child: TitleText(state: info, context: context, box: constraints),
-        ),
-        Expanded(
-          child: SubInfoList(
-              context: context, subInfos: info.subInfos, box: constraints),
-        ),
-      ],
+    return SizedBox.expand(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            child: TitleText(state: info, context: context, box: constraints),
+          ),
+          Expanded(
+            child: SubInfoList(
+                context: context, subInfos: info.subInfos, box: constraints),
+          ),
+        ],
+      ),
     );
   }
 
