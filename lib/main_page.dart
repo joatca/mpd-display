@@ -41,17 +41,17 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<PageState>(builder: (context, pageState, child) {
-      final themeInfo = pageState.theme();
+        final themeInfo = pageState.theme();
       final textTheme = Theme.of(context).textTheme.copyWith(
             headline1: TextStyle(
               fontFamily: themeInfo?.font,
-              fontSize: themeInfo?.titleSize,
+              fontSize: (themeInfo?.titleSize ?? 1) * pageState.fontFactor(),
               color: themeInfo?.titleColor,
               height: themeInfo?.height,
             ),
             headline2: TextStyle(
               fontFamily: themeInfo?.font,
-              fontSize: themeInfo?.infoSize,
+              fontSize: (themeInfo?.infoSize ?? 1) * pageState.fontFactor(),
               color: themeInfo?.infoColor,
               height: themeInfo?.height,
             ),

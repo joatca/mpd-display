@@ -76,24 +76,6 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () {
             _displayThemeDialog(context);
           }),
-      // Consumer<PageState>(
-      //   builder: (context, pageState, child) => PopupMenuButton<String>(
-      //     icon: const Icon(Icons.text_format),
-      //     itemBuilder: (context) {
-      //       return pageState
-      //           .themeNames()
-      //           .map((name) => CheckedPopupMenuItem(
-      //                 child: Text(name),
-      //                 value: name,
-      //                 checked: name == pageState.themeName,
-      //               ))
-      //           .toList();
-      //     },
-      //     onSelected: (s) {
-      //       pageState.setTheme(s);
-      //     },
-      //   ),
-      // ),
       IconButton(
           onPressed: () {
             _displayServerDialog(context, mpd);
@@ -223,30 +205,51 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
         builder: (context) {
           return AlertDialog(
             title: const Text("Appearance"),
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Consumer<PageState>(
-                    builder: (context, pageState, child) =>
+            content: Consumer<PageState>(
+                builder: (context, pageState, child) => SingleChildScrollView(
+                      child: Column(children: [
                         DropdownButton<String>(
-                      value: pageState.themeName,
-                      items: pageState
-                          .themeNames()
-                          .map((name) => DropdownMenuItem(
-                                child: Text(name),
-                                value: name,
-                              ))
-                          .toList(),
-                      onChanged: (s) {
-                        if (s != null) {
-                          pageState.setTheme(s);
-                        }
-                      },
-                    ),
-                  )
-                ],
-              ),
-            ),
+                          value: pageState.themeName,
+                          items: pageState
+                              .themeNames()
+                              .map((name) => DropdownMenuItem(
+                                    child: Text(name),
+                                    value: name,
+                                  ))
+                              .toList(),
+                          onChanged: (s) {
+                            if (s != null) {
+                              pageState.setThemeName(s);
+                            }
+                          },
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              IconButton(
+                                onPressed: pageState.canDecFontSize()
+                                    ? () {
+                                        pageState.decFontSize();
+                                      }
+                                    : null,
+                                icon: const Icon(Icons
+                                    .arrow_downward), // text_decrease is blank - bug?
+                                tooltip: "Reduce text size",
+                              ),
+                              Text(pageState.fontSizeDescription()),
+                              IconButton(
+                                onPressed: pageState.canIncFontSize()
+                                    ? () {
+                                        pageState.incFontSize();
+                                      }
+                                    : null,
+                                icon: const Icon(Icons
+                                    .arrow_upward), // text_increase is blank - bug?
+                                tooltip: "Increase text size",
+                              ),
+                            ])
+                      ]),
+                    )),
             actions: <Widget>[
               TextButton(
                 child: const Text("Done"),

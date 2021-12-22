@@ -49,6 +49,74 @@ class InfoTheme {
 
 class PageState extends ChangeNotifier {
   String _themeName = "Clean";
+  int _fontSizeOffset = 0;
+  static const fontOffsetLimit = 3;
+
+  PageState() : super() {
+    _loadTheme();
+  }
+
+  String get themeName => _themeName;
+
+  List<String> themeNames() => _themes.keys.toList();
+
+  String defaultTheme() => _themes.keys.first;
+  int defaultFontSizeOffset() => 0;
+
+  InfoTheme? theme() => _themes[themeName] ?? InfoTheme();
+
+  String fontSizeDescription() => "${_fontSizeOffset == 0 ? " " : ""}$_fontSizeOffset";
+  double fontFactor() => 1 + (_fontSizeOffset * 0.1);
+
+  void setThemeName(String name) {
+    _themeName = name;
+    _saveTheme();
+    notifyListeners();
+  }
+
+  void setThemeAndFont(String name, int fontSz) {
+    _themeName = name;
+    _fontSizeOffset = fontSz;
+    _saveTheme();
+    notifyListeners();
+  }
+
+  bool canIncFontSize() {
+    return _fontSizeOffset < fontOffsetLimit;
+  }
+
+  void incFontSize() {
+    if (canIncFontSize()) {
+      ++_fontSizeOffset;
+      _saveTheme();
+      notifyListeners();
+    }
+  }
+
+  bool canDecFontSize() {
+    return _fontSizeOffset > -fontOffsetLimit;
+  }
+
+  void decFontSize() {
+    if (canDecFontSize()) {
+      --_fontSizeOffset;
+      _saveTheme();
+      notifyListeners();
+    }
+  }
+
+  void _saveTheme() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme', _themeName);
+    await prefs.setInt('fontsize', _fontSizeOffset);
+  }
+
+  void _loadTheme() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('theme') ?? defaultTheme();
+    final fontSz = prefs.getInt('fontsize') ?? defaultFontSizeOffset();
+    setThemeAndFont(name, fontSz);
+  }
 
   static final _themes = {
     "Clean": InfoTheme(
@@ -117,32 +185,6 @@ class PageState extends ChangeNotifier {
       height: 1.0,
     ),
   };
-
-  PageState() : super() {
-    loadTheme();
-  }
-
-  String get themeName => _themeName;
-  List<String> themeNames() => _themes.keys.toList();
-  String defaultTheme() => _themes.keys.first;
-  InfoTheme? theme() => _themes[themeName] ?? InfoTheme();
-
-  void setTheme(String name) {
-    _themeName = name;
-    saveTheme(name);
-    notifyListeners();
-  }
-
-  void saveTheme(String name) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme', name);
-  }
-
-  void loadTheme() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('theme') ?? defaultTheme();
-    setTheme(name);
-  }
 }
 
 enum PlayState {
@@ -151,12 +193,7 @@ enum PlayState {
   playing,
 }
 
-enum InfoType {
-  album,
-  performer,
-  composer,
-  station
-}
+enum InfoType { album, performer, composer, station }
 
 /*
 Represents a combination of a type and a piece of text;
