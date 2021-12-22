@@ -91,7 +91,7 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       IconButton(
           onPressed: () {
-            _displayTextInputDialog(context, mpd);
+            _displayServerDialog(context, mpd);
           },
           icon: const Icon(Icons.settings_ethernet),
           tooltip: 'Set MPD Server'),
@@ -156,7 +156,7 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
     return newValue;
   }
 
-  Future<void> _displayTextInputDialog(
+  Future<void> _displayServerDialog(
       BuildContext context, MPDClient mpd) async {
     var oneLine = FilteringTextInputFormatter.singleLineFormatter;
     var portOnly = TextInputFormatter.withFunction(_ipPort);
