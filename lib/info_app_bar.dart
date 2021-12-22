@@ -71,24 +71,29 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.skip_next),
           tooltip: 'Pause'),
       const VerticalDivider(),
-      Consumer<PageState>(
-        builder: (context, pageState, child) => PopupMenuButton<String>(
+      IconButton(
           icon: const Icon(Icons.text_format),
-          itemBuilder: (context) {
-            return pageState
-                .themeNames()
-                .map((name) => CheckedPopupMenuItem(
-                      child: Text(name),
-                      value: name,
-                      checked: name == pageState.themeName,
-                    ))
-                .toList();
-          },
-          onSelected: (s) {
-            pageState.setTheme(s);
-          },
-        ),
-      ),
+          onPressed: () {
+            _displayThemeDialog(context);
+          }),
+      // Consumer<PageState>(
+      //   builder: (context, pageState, child) => PopupMenuButton<String>(
+      //     icon: const Icon(Icons.text_format),
+      //     itemBuilder: (context) {
+      //       return pageState
+      //           .themeNames()
+      //           .map((name) => CheckedPopupMenuItem(
+      //                 child: Text(name),
+      //                 value: name,
+      //                 checked: name == pageState.themeName,
+      //               ))
+      //           .toList();
+      //     },
+      //     onSelected: (s) {
+      //       pageState.setTheme(s);
+      //     },
+      //   ),
+      // ),
       IconButton(
           onPressed: () {
             _displayServerDialog(context, mpd);
@@ -156,8 +161,7 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
     return newValue;
   }
 
-  Future<void> _displayServerDialog(
-      BuildContext context, MPDClient mpd) async {
+  Future<void> _displayServerDialog(BuildContext context, MPDClient mpd) async {
     var oneLine = FilteringTextInputFormatter.singleLineFormatter;
     var portOnly = TextInputFormatter.withFunction(_ipPort);
     String? mpdServer;
@@ -204,6 +208,48 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               TextButton(
                 child: const Text("Cancel"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _displayThemeDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Appearance"),
+            content: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Consumer<PageState>(
+                    builder: (context, pageState, child) =>
+                        DropdownButton<String>(
+                      value: pageState.themeName,
+                      items: pageState
+                          .themeNames()
+                          .map((name) => DropdownMenuItem(
+                                child: Text(name),
+                                value: name,
+                              ))
+                          .toList(),
+                      onChanged: (s) {
+                        if (s != null) {
+                          pageState.setTheme(s);
+                        }
+                      },
+                    ),
+                  )
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("Done"),
                 onPressed: () {
                   Navigator.pop(context);
                 },
