@@ -168,8 +168,8 @@ class MPDClient {
     retryTimer?.cancel();
     if (stayConnected) {
       controller.add(Info(
-          connected: false,
-          info: "Trying to connect to server \"$server\" on port $port"));
+        connected: false,
+      ));
       retryTimer = Timer(Duration(seconds: retryInterval), connect);
       if (retryInterval < maxRetryInterval) {
         retryInterval += retryIncrement;

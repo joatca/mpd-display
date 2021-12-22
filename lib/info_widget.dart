@@ -108,11 +108,16 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
               widget.mpd.getStatus();
             }
           }),
-      body: LayoutBuilder(
-        builder: (context, constraints) => _state.info.isEmpty()
-            ? emptyLayout(context, constraints)
-            : playingLayout(context, constraints, _state.info),
-      ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        if (!_state.info.connected) {
+          return emptyLayout(
+              context, constraints, Icons.signal_wifi_connected_no_internet_4);
+        } else if (_state.info.isEmpty()) {
+          return emptyLayout(context, constraints, Icons.queue_music);
+        } else {
+          return playingLayout(context, constraints, _state.info);
+        }
+      }),
     );
   }
 
@@ -132,11 +137,19 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     );
   }
 
-  Widget emptyLayout(BuildContext context, BoxConstraints constraints) {
-    return const Center(
-      child: Icon(
-        Icons.queue_music,
-        size: 150,
+  Widget emptyLayout(
+    BuildContext context, BoxConstraints constraints, IconData icon) {
+    final textStyle = Theme.of(context).textTheme.headline1;
+    return Center(
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            size: textStyle?.fontSize,
+          ),
+          Text("${widget.mpd.server}:${widget.mpd.port}",
+              style: textStyle),
+        ],
       ),
     );
   }
