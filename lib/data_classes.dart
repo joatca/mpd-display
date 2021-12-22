@@ -65,7 +65,8 @@ class PageState extends ChangeNotifier {
 
   InfoTheme? theme() => _themes[themeName] ?? InfoTheme();
 
-  String fontSizeDescription() => "${_fontSizeOffset == 0 ? " " : ""}$_fontSizeOffset";
+  String fontSizeDescription() =>
+      "${_fontSizeOffset == 0 ? " " : ""}$_fontSizeOffset";
   double fontFactor() => 1 + (_fontSizeOffset * 0.1);
 
   void setThemeName(String name) {
@@ -229,7 +230,9 @@ class Info {
     }
   }
 
-  bool isEmpty() => info == null && subInfos.isEmpty;
+  bool hasData() => (info != null) || subInfos.isNotEmpty;
+  
+  bool isEmpty() => (info == null) && subInfos.isEmpty;
 
   String toString() {
     return "info $info subinfos ${subInfos.length}${repeat ? " [Rpt]" : ""}${random ? " [Rnd]" : ""}${single ? " [Sgl]" : ""}";
