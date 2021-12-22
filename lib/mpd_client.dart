@@ -275,6 +275,7 @@ class MPDClient {
           case "albumartist":
           case "composer":
           case "performer":
+          case "name": // name of the radio station
             md.putIfAbsent(key, () => []).add(value ?? "?");
             break;
         }
@@ -301,6 +302,7 @@ class MPDClient {
     info.addAll(InfoType.performer, md["performer"]);
     info.addAll(InfoType.performer, md["albumartist"]);
     info.addAll(InfoType.album, md["album"]);
+    info.addAll(InfoType.station, md["name"]);
     controller.add(info);
     goIdle();
   }

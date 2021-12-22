@@ -155,6 +155,7 @@ enum InfoType {
   album,
   performer,
   composer,
+  station
 }
 
 /*
