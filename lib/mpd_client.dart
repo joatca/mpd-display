@@ -81,6 +81,7 @@ class MPDClient {
     if (kDebugMode) {
       print("connectSocket");
     }
+    retryTimer?.cancel();
     await loadServerPrefs();
     if (socket == null) {
       // only connect if we aren't already connected
@@ -91,7 +92,6 @@ class MPDClient {
         if (kDebugMode) {
           print("connectSocket: connected");
         }
-        retryTimer?.cancel();
         retryInterval = minRetryInterval;
         sock.listen(
           onData,
@@ -108,8 +108,6 @@ class MPDClient {
         // if we need to retry here there is no valid socket so we can re-call this function
         retry(connectSocket);
       });
-    } else {
-      retryTimer?.cancel();
     }
   }
 
@@ -144,10 +142,13 @@ class MPDClient {
     if (kDebugMode) {
       print("reconnectSocket");
     }
-    abnormalDisconnect = true;
-    await disconnectSocket();
-    abnormalDisconnect = false;
-    await connectSocket();
+    if (stayConnected) {
+      // probably unnecessary but let's be paranoid
+      abnormalDisconnect = true;
+      await disconnectSocket();
+      abnormalDisconnect = false;
+      await connectSocket();
+    }
   }
 
   void onData(Uint8List data) {
@@ -168,7 +169,7 @@ class MPDClient {
       print("onDone");
     }
     notifyDisconnected();
-    if (!abnormalDisconnect) {
+    if (!abnormalDisconnect && stayConnected) {
       // only do this is we are not in the middle of a reconnect cycle
       // if onDone is called then the socket is closed so it's safe to discard it
       socket = null;
@@ -181,13 +182,14 @@ class MPDClient {
       print("onError: $e");
     }
     notifyDisconnected();
-    // retrying here probably means the socket is dead, but let's make sure
-    retry(() async {
-      if (kDebugMode) {
-        print("retry after error");
-      }
-      await reconnectSocket(); // onDone will reconnect
-    });
+    if (stayConnected) {
+      retry(() async {
+        if (kDebugMode) {
+          print("retry after error");
+        }
+        await reconnectSocket();
+      });
+    }
   }
 
   Future<void> loadServerPrefs() async {
@@ -224,17 +226,8 @@ class MPDClient {
   }
 
   Future<void> retry(Future<void> Function() retryAction) async {
-    // if (kDebugMode) {
-    //   print("retry");
-    // }
-    // retryTimer?.cancel();
-    // if (stayConnected) {
-    //   if (kDebugMode) {
-    //     print("retry: sent disconnected notification");
-    //   }
-    //   await disconnectSocket();
     if (kDebugMode) {
-      print("retry: retry in $retryTimer");
+      print("retry: retry in ${retryInterval}s");
     }
     retryTimer = Timer(Duration(seconds: retryInterval), retryAction);
     if (retryInterval < maxRetryInterval) {
@@ -427,7 +420,7 @@ class MPDClient {
       if (kDebugMode) {
         print("processMPDOutput: found error, trying reconnect");
       }
-      reconnectSocket(); // onDone will reconnect
+      reconnectSocket();
     } else if (changed) {
       if (kDebugMode) {
         print("processMPDOutput: changed, trying get status");
