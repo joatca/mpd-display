@@ -77,6 +77,14 @@ class MPDClient {
     connectSocket();
   }
 
+  void disconnect() {
+    if (kDebugMode) {
+      print("disconnect");
+    }
+    stayConnected = false;
+    disconnectSocket();
+  }
+
   Future<void> connectSocket() async {
     if (kDebugMode) {
       print("connectSocket");
@@ -97,6 +105,8 @@ class MPDClient {
           onData,
           onDone: onDone,
           onError: onError,
+          cancelOnError:
+              true, // we want it to be safe to destroy the socket and re-connect after any error
         );
         socket = sock;
         connstate = ConnState.connecting;
@@ -111,14 +121,6 @@ class MPDClient {
     }
   }
 
-  void disconnect() {
-    if (kDebugMode) {
-      print("disconnect");
-    }
-    stayConnected = false;
-    disconnectSocket();
-  }
-
   Future<void> disconnectSocket() async {
     if (kDebugMode) {
       print("disconnectSocket");
@@ -129,24 +131,11 @@ class MPDClient {
     }
     await socket?.flush();
     if (kDebugMode) {
-      print("disconnectSocket: closing");
+      print("disconnectSocket: destroying");
     }
-    await socket?.close();
+    socket?.destroy(); // this will trigger onDone()
     if (kDebugMode) {
-      print("disconnectSocket: closed");
-    }
-    socket = null;
-  }
-
-  Future<void> reconnectSocket() async {
-    if (kDebugMode) {
-      print("reconnectSocket");
-    }
-    if (stayConnected) {
-      // probably unnecessary but let's be paranoid
-      disableOnDoneReconnect = true;
-      await disconnectSocket();
-      await connectSocket();
+      print("disconnectSocket: destroyed");
     }
   }
 
@@ -168,20 +157,9 @@ class MPDClient {
       print("onDone disableOnDoneReconnect=$disableOnDoneReconnect");
     }
     notifyDisconnected();
-    if (disableOnDoneReconnect) {
-      // this means reconnectSocket() is in the middle of reconnecting and we
-      // shouldn't attempt to reconnect again (otherwise we end up with a
-      // phantom socket and we received multiple confusing output from mpd)
-      if (kDebugMode) {
-        print("onDone: reconnect disabled");
-      }
-      disableOnDoneReconnect = false;
-      if (kDebugMode) {
-        print("onDone: disableOnDoneReconnect unset");
-      }
-    } else if (stayConnected) {
-      // if onDone is called then the socket is closed so it's safe to discard it
-      socket = null;
+    socket?.destroy(); // destroy it, to ensure TCP stuff is cleaned up
+    socket = null;
+    if (stayConnected) {
       connectSocket();
     }
   }
@@ -191,12 +169,21 @@ class MPDClient {
       print("onError: $e");
     }
     notifyDisconnected();
+    // the subscription is set to cancel on error, so onDone will not be called
+    if (kDebugMode) {
+      print("onError: destroying socket");
+    }
+    socket?.destroy();
+    socket = null;
+    if (kDebugMode) {
+      print("onError: socket destroyed");
+    }
     if (stayConnected) {
       retry(() async {
         if (kDebugMode) {
           print("retry after error");
+          connectSocket();
         }
-        await reconnectSocket();
       });
     }
   }
@@ -229,15 +216,18 @@ class MPDClient {
     if (kDebugMode) {
       print("setServer: saved");
     }
-    if (stayConnected) {
-      await reconnectSocket();
-    }
+    // if currently connected, this will trigger onDone(), which will call
+    // connect() since stayConnected will still be true, which will use the
+    // settings we just saved; if not connected then the next retry will pick up
+    // the new settings
+    socket?.destroy();
   }
 
   Future<void> retry(Future<void> Function() retryAction) async {
     if (kDebugMode) {
       print("retry: retry in ${retryInterval}s");
     }
+    retryTimer?.cancel(); // cancel the old one, if any
     retryTimer = Timer(Duration(seconds: retryInterval), retryAction);
     if (retryInterval < maxRetryInterval) {
       retryInterval += retryIncrement;
@@ -261,14 +251,15 @@ class MPDClient {
     if (kDebugMode) {
       print("processConnecting");
     }
-    if (lines.length == 1 && lines[0].startsWith("OK")) {
+    final mpdVersionPattern = RegExp(r'^OK MPD [.0-9]+$');
+    if (lines.length >= 1 && mpdVersionPattern.hasMatch(lines[0])) {
       print("processConnecting: getstatus");
       getStatus();
     } else {
       if (kDebugMode) {
-        print("processConnecting: reconnecting");
+        print("processConnecting: not an MPD server: ${lines}");
       }
-      reconnectSocket();
+      controller.add(Info(connected: false, info: "Not an MPD player"));
     }
   }
 
@@ -285,7 +276,8 @@ class MPDClient {
       if (kDebugMode) {
         print("processCommand: not OK");
       }
-      reconnectSocket();
+      // in future perhaps perform some UI action to indicate a failure but for now just suck it up
+      goIdle();
     }
   }
 
@@ -305,7 +297,7 @@ class MPDClient {
     final ackPattern = RegExp(r'^ACK');
     var sectionLineCount = 0;
     if (kDebugMode) {
-      print("processMPDOutput: batch; state: $connstate");
+      print("processMPDOutput: reading lines in state: $connstate");
     }
     for (var line in lines) {
       if (error) {
@@ -427,9 +419,10 @@ class MPDClient {
     }
     if (error) {
       if (kDebugMode) {
-        print("processMPDOutput: found error, trying reconnect");
+        print("processMPDOutput: found error");
       }
-      reconnectSocket();
+      // in future perhaps perform some UI action to indicate a failure but for now just suck it up
+      goIdle();
     } else if (changed) {
       if (kDebugMode) {
         print("processMPDOutput: changed, trying get status");
