@@ -22,7 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
-import 'info_app_bar.dart';
+import 'info_appbar.dart';
 import 'title_text.dart';
 import 'subinfo.dart';
 
