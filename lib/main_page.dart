@@ -62,6 +62,7 @@ class _MainPageState extends State<MainPage> {
       final appbarTheme = Theme.of(context).appBarTheme.copyWith(
             backgroundColor: themeInfo?.bgColor,
             foregroundColor: themeInfo?.titleColor,
+            iconTheme: iconTheme,
           );
       final sliderColor = themeInfo?.titleColor;
       final sliderTheme = Theme.of(context).sliderTheme.copyWith(
@@ -72,7 +73,6 @@ class _MainPageState extends State<MainPage> {
       final theme = Theme.of(context).copyWith(
         textTheme: textTheme,
         scaffoldBackgroundColor: themeInfo?.bgColor,
-        iconTheme: iconTheme,
         appBarTheme: appbarTheme,
         sliderTheme: sliderTheme,
       );

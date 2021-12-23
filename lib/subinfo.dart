@@ -78,6 +78,7 @@ class SubInfoRow extends StatelessWidget {
           padding: const EdgeInsets.only(right: 16),
           child: Icon(
             infoTypeToIcon(subInfo.type),
+            color: Theme.of(context).textTheme.headline2?.color,
             size: Theme.of(context).textTheme.headline2?.fontSize,
           ),
         ),
