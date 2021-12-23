@@ -47,7 +47,7 @@ class MPDClient {
   Socket? socket;
   ConnState connstate = ConnState.connecting;
   bool stayConnected = false; // whether to reconnect on failure/disconnect
-  bool abnormalDisconnect = false;
+  bool disableOnDoneReconnect = false;
   late StreamController<Info> controller;
   final utf8 = const Utf8Codec(allowMalformed: true);
 
@@ -144,9 +144,8 @@ class MPDClient {
     }
     if (stayConnected) {
       // probably unnecessary but let's be paranoid
-      abnormalDisconnect = true;
+      disableOnDoneReconnect = true;
       await disconnectSocket();
-      abnormalDisconnect = false;
       await connectSocket();
     }
   }
@@ -166,11 +165,21 @@ class MPDClient {
 
   void onDone() {
     if (kDebugMode) {
-      print("onDone");
+      print("onDone disableOnDoneReconnect=$disableOnDoneReconnect");
     }
     notifyDisconnected();
-    if (!abnormalDisconnect && stayConnected) {
-      // only do this is we are not in the middle of a reconnect cycle
+    if (disableOnDoneReconnect) {
+      // this means reconnectSocket() is in the middle of reconnecting and we
+      // shouldn't attempt to reconnect again (otherwise we end up with a
+      // phantom socket and we received multiple confusing output from mpd)
+      if (kDebugMode) {
+        print("onDone: reconnect disabled");
+      }
+      disableOnDoneReconnect = false;
+      if (kDebugMode) {
+        print("onDone: disableOnDoneReconnect unset");
+      }
+    } else if (stayConnected) {
       // if onDone is called then the socket is closed so it's safe to discard it
       socket = null;
       connectSocket();
