@@ -148,6 +148,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           Icon(
             icon,
             size: textStyle?.fontSize,
+            color: textStyle?.color,
           ),
           Text("${widget.mpd.server}:${widget.mpd.port}", style: textStyle),
         ],
