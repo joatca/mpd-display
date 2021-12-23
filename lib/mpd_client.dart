@@ -47,7 +47,6 @@ class MPDClient {
   Socket? socket;
   ConnState connstate = ConnState.connecting;
   bool stayConnected = false; // whether to reconnect on failure/disconnect
-  bool disableOnDoneReconnect = false;
   late StreamController<Info> controller;
   final utf8 = const Utf8Codec(allowMalformed: true);
 
@@ -154,10 +153,10 @@ class MPDClient {
 
   void onDone() {
     if (kDebugMode) {
-      print("onDone disableOnDoneReconnect=$disableOnDoneReconnect");
+      print("onDone");
     }
     notifyDisconnected();
-    socket?.destroy(); // destroy it, to ensure TCP stuff is cleaned up
+    socket?.destroy(); // destroy it to ensure TCP stuff is cleaned up
     socket = null;
     if (stayConnected) {
       connectSocket();
@@ -175,9 +174,6 @@ class MPDClient {
     }
     socket?.destroy();
     socket = null;
-    if (kDebugMode) {
-      print("onError: socket destroyed");
-    }
     if (stayConnected) {
       retry(() async {
         if (kDebugMode) {
@@ -217,9 +213,9 @@ class MPDClient {
       print("setServer: saved");
     }
     // if currently connected, this will trigger onDone(), which will call
-    // connect() since stayConnected will still be true, which will use the
-    // settings we just saved; if not connected then the next retry will pick up
-    // the new settings
+    // connect() (since stayConnected will still be true), using the settings we
+    // just saved; if not connected then the next retry will pick up the new
+    // settings
     socket?.destroy();
   }
 
