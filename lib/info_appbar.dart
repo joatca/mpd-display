@@ -21,7 +21,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'about.dart';
 import 'data_classes.dart';
-import 'info_widget.dart';
+import 'info.dart';
 import 'mpd_client.dart';
 
 class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {

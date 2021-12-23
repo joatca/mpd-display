@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
-import 'info_widget.dart';
+import 'info.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.title}) : super(key: key);
