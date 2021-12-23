@@ -23,7 +23,7 @@ import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'info_appbar.dart';
-import 'title_text.dart';
+import 'title.dart';
 import 'subinfo.dart';
 
 class InfoState {
