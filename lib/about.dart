@@ -57,6 +57,7 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
     super.initState();
     _fetchVersion();
   }
+  
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
