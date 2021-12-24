@@ -335,6 +335,20 @@ class MPDClient {
           info.addAll(InfoType.performer, md["albumartist"]);
           info.addAll(InfoType.album, md["album"]);
           info.addAll(InfoType.station, md["name"]);
+          var techData = <String>[];
+          if (info.duration > 0) {
+            techData.add(info.durationToString());
+          }
+          if (info.fileType != null) {
+            techData.add(info.fileType!);
+          }
+          if (md.containsKey("audio")) {
+            techData.add(md["audio"]?.join("") ?? "");
+          }
+          if (info.song > 0 && info.playlistlength > 0) {
+            techData.add("(${info.song}/${info.playlistlength})");
+          }
+          info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
           if (info.hasData()) {
             if (kDebugMode) {
               print(
@@ -398,15 +412,25 @@ class MPDClient {
             case "elapsed":
               info.elapsed = double.parse(value ?? "0");
               break;
+            case "song":
+              info.song = int.parse(value ?? "0");
+              break;
+            case "playlistlength":
+              info.playlistlength = int.parse(value ?? "0");
+              break;
             case "title":
               info.info = value ?? "?";
+              break;
+            case "file":
+              info.setFiletypeFromPath(value);
               break;
             case "album":
             case "artist":
             case "albumartist":
             case "composer":
             case "performer":
-            case "name": // name of the radio station
+            case "name": // name of a radio station
+            case "audio": // audio file details
               md.putIfAbsent(key, () => []).add(value ?? "?");
               break;
           }

@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class InfoTheme {
@@ -194,7 +195,7 @@ enum PlayState {
   playing,
 }
 
-enum InfoType { album, performer, composer, station }
+enum InfoType { album, performer, composer, station, technical }
 
 /*
 Represents a combination of a type and a piece of text;
@@ -209,6 +210,7 @@ class SubInfo {
 }
 
 class Info {
+  static final timeFormat = NumberFormat("00");
   String? info; // the current track title or perhaps a status message
   List<SubInfo> subInfos = [];
   PlayState state = PlayState.stopped;
@@ -219,9 +221,21 @@ class Info {
   double duration = 0; // seconds
   double elapsed = 0; // seconds
   double timestamp = 0; // when this info was created
+  int song = 0; // position in the playlist
+  int playlistlength = 0; // length of the playlist
+  String? fileType; // e.g. FLAC
 
   Info({this.connected = false, this.info}) {
     timestamp = DateTime.now().millisecondsSinceEpoch.toDouble() / 1000;
+  }
+
+  void setFiletypeFromPath(String? name) {
+    if (name != null) {
+      final components = name.split(".");
+      if (components.length > 1) {
+        fileType = components.last.toUpperCase();
+      }
+    }
   }
 
   void addAll(InfoType type, List<String>? vals) {
@@ -230,8 +244,11 @@ class Info {
     }
   }
 
+  String durationToString() =>
+      "${timeFormat.format(duration.round() ~/ 60)}:${timeFormat.format(duration.round() % 60)}";
+
   bool hasData() => (info != null) || subInfos.isNotEmpty;
-  
+
   bool isEmpty() => (info == null) && subInfos.isEmpty;
 
   String toString() {

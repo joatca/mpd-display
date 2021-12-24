@@ -106,6 +106,8 @@ class SubInfoRow extends StatelessWidget {
         return Icons.piano;
       case InfoType.station:
         return Icons.radio;
+      case InfoType.technical:
+        return Icons.info_outline;
       default:
         return Icons.device_unknown;
     }
