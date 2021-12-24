@@ -127,9 +127,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       onTap: () {
         widget.mpd.sendCommand("pause");
       },
-      onHorizontalDragEnd: (dragDetails) {
-        widget.mpd.sendCommand((dragDetails.primaryVelocity ?? 0) < 0 ? "next" : "previous");
-      },
+      // onHorizontalDragEnd: (dragDetails) {
+      //   widget.mpd.sendCommand((dragDetails.primaryVelocity ?? 0) < 0 ? "next" : "previous");
+      // },
       child: SizedBox.expand(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
