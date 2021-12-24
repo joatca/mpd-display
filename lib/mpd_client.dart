@@ -348,18 +348,14 @@ class MPDClient {
           if (info.song > 0 && info.playlistlength > 0) {
             techData.add("(${info.song}/${info.playlistlength})");
           }
-          info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
-          if (info.hasData()) {
-            if (kDebugMode) {
-              print(
-                  "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
-            }
-            controller.add(info);
-          } else {
-            if (kDebugMode) {
-              print("processMPDOutput: no data to send");
-            }
+          if (techData.length > 0) {
+            info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
           }
+          if (kDebugMode) {
+            print(
+              "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
+          }
+          controller.add(info);
         }
         info = Info(
             connected:
