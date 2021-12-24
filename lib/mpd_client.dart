@@ -62,9 +62,10 @@ class MPDClient {
     return controller.stream;
   }
 
-  void notifyDisconnected() {
+  void notifyDisconnected([String? msg]) {
     controller.add(Info(
       connected: false,
+      info: msg,
     ));
   }
 
@@ -255,7 +256,7 @@ class MPDClient {
       if (kDebugMode) {
         print("processConnecting: not an MPD server: ${lines}");
       }
-      controller.add(Info(connected: false, info: "Not an MPD player"));
+      notifyDisconnected("Not an MPD player");
     }
   }
 
@@ -353,7 +354,7 @@ class MPDClient {
           }
           if (kDebugMode) {
             print(
-              "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
+                "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
           }
           controller.add(info);
         }
@@ -456,7 +457,7 @@ class MPDClient {
     if (kDebugMode) {
       print("goIdle");
     }
-    sendCommand("idle player");
+    sendCommand("idle player database playlist");
     connstate = ConnState.readoutput;
   }
 
