@@ -110,8 +110,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           }),
       body: LayoutBuilder(builder: (context, constraints) {
         if (!_state.info.connected) {
-          return emptyLayout(
-              context, constraints, Icons.signal_wifi_connected_no_internet_4, _state.info.info);
+          return emptyLayout(context, constraints,
+              Icons.signal_wifi_connected_no_internet_4, _state.info.info);
         } else if (_state.info.isEmpty()) {
           return emptyLayout(context, constraints, Icons.queue_music);
         } else {
@@ -123,24 +123,33 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   Widget playingLayout(
       BuildContext context, BoxConstraints constraints, Info info) {
-    return SizedBox.expand(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            child: TitleText(state: info, context: context, box: constraints),
-          ),
-          Expanded(
-            child: SubInfoList(
-                context: context, subInfos: info.subInfos, box: constraints),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () {
+        widget.mpd.sendCommand("pause");
+      },
+      onHorizontalDragEnd: (dragDetails) {
+        widget.mpd.sendCommand((dragDetails.primaryVelocity ?? 0) < 0 ? "next" : "previous");
+      },
+      child: SizedBox.expand(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              child: TitleText(state: info, context: context, box: constraints),
+            ),
+            Expanded(
+              child: SubInfoList(
+                  context: context, subInfos: info.subInfos, box: constraints),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget emptyLayout(
-    BuildContext context, BoxConstraints constraints, IconData icon, [String? msg]) {
+      BuildContext context, BoxConstraints constraints, IconData icon,
+      [String? msg]) {
     final textStyle = Theme.of(context).textTheme.headline1;
     return Center(
       child: Column(
@@ -150,7 +159,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             size: textStyle?.fontSize,
             color: textStyle?.color,
           ),
-          Text(msg ?? "${widget.mpd.server}:${widget.mpd.port}", style: textStyle),
+          Text(msg ?? "${widget.mpd.server}:${widget.mpd.port}",
+              style: textStyle),
         ],
       ),
     );
