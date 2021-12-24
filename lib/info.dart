@@ -51,6 +51,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   int currentScroll = 0;
   int scrollDirection = 1;
   Timer? ticker;
+  final gestureKey =
+      GlobalKey(); // used to fetch size of text area when processing taps
 
   _InfoWidgetState();
 
@@ -124,12 +126,21 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   Widget playingLayout(
       BuildContext context, BoxConstraints constraints, Info info) {
     return GestureDetector(
-      onTap: () {
-        widget.mpd.sendCommand("pause");
+      key: gestureKey,
+      onTapUp: (details) {
+        final box = gestureKey.currentContext?.findRenderObject();
+        if (box is RenderBox) {
+          final width = box.size.width;
+          final tapPosition = details.localPosition.dx;
+          if (tapPosition < width * 0.25) {
+            widget.mpd.sendCommand("previous");
+          } else if (tapPosition > width * 0.75) {
+            widget.mpd.sendCommand("next");
+          } else {
+            widget.mpd.sendCommand("pause");
+          }
+        }
       },
-      // onHorizontalDragEnd: (dragDetails) {
-      //   widget.mpd.sendCommand((dragDetails.primaryVelocity ?? 0) < 0 ? "next" : "previous");
-      // },
       child: SizedBox.expand(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
