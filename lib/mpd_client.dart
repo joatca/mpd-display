@@ -331,7 +331,13 @@ class MPDClient {
           }
           // the addAll methods handle nulls and empty lists as no-ops, the clever logic is the deletion and renaming above
           info.addAll(InfoType.composer, md["composer"]);
-          info.addAll(InfoType.performer, md["artist"]);
+          if (md.containsKey("performer")) {
+            // if performers exist then assume the artist is the composer
+            info.addAll(InfoType.composer, md["artist"]);
+          } else {
+            // otherwise assume it's a regular artist/performer
+            info.addAll(InfoType.performer, md["artist"]);
+          }
           info.addAll(InfoType.performer, md["performer"]);
           info.addAll(InfoType.performer, md["albumartist"]);
           info.addAll(InfoType.album, md["album"]);
