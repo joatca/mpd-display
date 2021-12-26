@@ -355,7 +355,7 @@ class MPDClient {
           if (info.song > 0 && info.playlistlength > 0) {
             techData.add("(${info.song}/${info.playlistlength})");
           }
-          if (techData.length > 0) {
+          if (techData.isNotEmpty) {
             info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
           }
           if (kDebugMode) {
