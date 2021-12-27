@@ -127,7 +127,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       BuildContext context, BoxConstraints constraints, Info info) {
     return GestureDetector(
       key: gestureKey,
-      onTapUp: (details) {
+      onTapDown: (details) {
         final box = gestureKey.currentContext?.findRenderObject();
         if (box is RenderBox) {
           final width = box.size.width;
