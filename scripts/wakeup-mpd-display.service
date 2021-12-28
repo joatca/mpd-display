@@ -1,0 +1,8 @@
+[Unit]
+Description=Wakeup MPD Display when playback starts
+
+[Service]
+ExecStart=/home/pi/wakeup-mpd-display.sh
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# install the wakeup script
+cat >~/wakeup-mpd-display.sh <<'SCRIPT'
+# WAKEUP-SCRIPT
+SCRIPT
+chmod +x ~/wakeup-mpd-display.sh
+
+# install the service
+mkdir -p ~/.config/systemd/user
+cat >~/.config/systemd/user/wakeup-mpd-display.service <<'SERVICE'
+# WAKEUP-SERVICE
+SERVICE
+
+systemctl --user daemon-reload
+systemctl --user enable wakeup-mpd-display
+systemctl --user stop wakeup-mpd-display
+systemctl --user start wakeup-mpd-display
