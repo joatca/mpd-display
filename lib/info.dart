@@ -27,14 +27,22 @@ import 'title.dart';
 import 'subinfo.dart';
 
 class InfoState {
-  Info info = Info();
+  Info _info = Info();
   double estimatedElapsed = 0;
   var sliderUpdateEnabled = true;
   double currentTime = 0;
+
+  // ignore: unnecessary_getters_setters
+  Info get info => _info;
+
+  set info(Info i) {
+    _info = i;
+    // here we can do further processing
+  }
 }
 
 class InfoWidget extends StatefulWidget {
-  InfoWidget({Key? key, required this.mpd, required this.title})
+  const InfoWidget({Key? key, required this.mpd, required this.title})
       : super(key: key);
 
   final MPDClient mpd;
