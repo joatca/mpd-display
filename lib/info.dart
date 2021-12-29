@@ -31,6 +31,7 @@ class InfoState {
   double estimatedElapsed = 0;
   var sliderUpdateEnabled = true;
   double currentTime = 0;
+  List<GlobalKey> scrollPoints = [];
 
   // ignore: unnecessary_getters_setters
   Info get info => _info;
@@ -38,6 +39,12 @@ class InfoState {
   set info(Info i) {
     _info = i;
     // here we can do further processing
+    scrollPoints.clear();
+    for (var si in _info.subInfos) {
+      for (var wk in si.wordKeys) {
+        scrollPoints.add(wk.key);
+      }
+    }
   }
 }
 
@@ -201,9 +208,10 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         }
       });
     }
-    if (_state.info.subInfos.isNotEmpty) {
-      final wantedScroll =
-          (_state.estimatedElapsed ~/ 5).remainder(_state.info.subInfos.length);
+    if (_state.scrollPoints.isNotEmpty) {
+      // converting elapsed time directly to seconds gives us one word per second
+      final wantedScroll = (_state.estimatedElapsed.toInt())
+          .remainder(_state.scrollPoints.length);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
         scrollTo(currentScroll);
@@ -212,12 +220,17 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   }
 
   void scrollTo(int pos) async {
-    final cntxt = _state.info.subInfos[pos].key.currentContext;
+    final cntxt = _state.scrollPoints[pos].currentContext;
     if (cntxt != null) {
       Scrollable.ensureVisible(
         cntxt,
-        duration: Duration(seconds: 1),
+        duration: const Duration(seconds: 1),
         curve: Curves.easeInOut,
+        // this prioritizes the first lines, doesn't scroll until it absolutely
+        // has to, and makes the last line the least visible
+        alignmentPolicy: pos == 0
+            ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+            : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
       );
     }
   }

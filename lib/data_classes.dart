@@ -197,16 +197,34 @@ enum PlayState {
 
 enum InfoType { album, performer, composer, station, technical }
 
+/* represents a word within a subinfo text and the associated global key, so it
+can be scrolled to */
+
+class WordKey {
+  final String word;
+  final key = GlobalKey();
+
+  WordKey(this.word);
+}
+
 /*
 Represents a combination of a type and a piece of text;
 usually this is something like { Icons.album, "Some album name" }
 */
+
 class SubInfo {
   InfoType type;
   String text;
-  GlobalKey key = GlobalKey();
+  List<WordKey> wordKeys = [];
 
-  SubInfo(this.type, this.text);
+
+  SubInfo(this.type, this.text) {
+    var i = 0;
+    for (final word in text.split(" ").where((word) => word.isNotEmpty)) {
+      wordKeys.add(WordKey(i == 0 ? word : " $word"));
+      i++;
+    }
+  }
 }
 
 class Info {

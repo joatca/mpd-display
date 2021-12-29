@@ -69,8 +69,8 @@ class SubInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textStyle =  Theme.of(context).textTheme.headline2;
     return Row(
-      key: subInfo.key,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -83,13 +83,15 @@ class SubInfoRow extends StatelessWidget {
           ),
         ),
         Flexible(
-          child: Text(
-            subInfo.text,
-            textAlign: TextAlign.left,
-            overflow: TextOverflow.ellipsis,
-            softWrap: true,
-            maxLines: lines,
-            style: Theme.of(context).textTheme.headline2,
+          // child: Text(
+          //   subInfo.text,
+          //   textAlign: TextAlign.left,
+          //   overflow: TextOverflow.ellipsis,
+          //   softWrap: true,
+          //   maxLines: lines,
+          //   style: Theme.of(context).textTheme.headline2,
+          child: Wrap(
+            children: subInfo.wordKeys.map((wk) => Text(wk.word, key: wk.key, style: textStyle)).toList(),
           ),
         ),
       ],
