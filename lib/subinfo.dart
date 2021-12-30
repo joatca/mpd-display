@@ -46,7 +46,8 @@ class SubInfoList extends StatelessWidget {
         .map((si) => SubInfoRow(context: context, subInfo: si, lines: lines))
         .toList();
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: paddingBase * 2, vertical: paddingBase),
+      padding: EdgeInsets.symmetric(
+          horizontal: paddingBase * 2, vertical: paddingBase),
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -71,17 +72,18 @@ class SubInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = Theme.of(context).textTheme.headline2;
+    final subInfoStyle = Theme.of(context).textTheme.headline2;
+    final iconSize = (subInfoStyle?.fontSize ?? 1) * (subInfoStyle?.height ?? 1);
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
           child: Icon(
             infoTypeToIcon(subInfo.type),
-            color: Theme.of(context).textTheme.headline2?.color,
-            size: Theme.of(context).textTheme.headline2?.fontSize,
+            color: subInfoStyle?.color,
+            size: iconSize,
           ),
         ),
         Flexible(
@@ -94,7 +96,7 @@ class SubInfoRow extends StatelessWidget {
           //   style: Theme.of(context).textTheme.headline2,
           child: Wrap(
             children: subInfo.wordKeys
-                .map((wk) => Text(wk.word, key: wk.key, style: textStyle))
+                .map((wk) => Text(wk.word, key: wk.key, style: subInfoStyle))
                 .toList(),
           ),
         ),
