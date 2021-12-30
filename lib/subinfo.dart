@@ -87,13 +87,6 @@ class SubInfoRow extends StatelessWidget {
           ),
         ),
         Flexible(
-          // child: Text(
-          //   subInfo.text,
-          //   textAlign: TextAlign.left,
-          //   overflow: TextOverflow.ellipsis,
-          //   softWrap: true,
-          //   maxLines: lines,
-          //   style: Theme.of(context).textTheme.headline2,
           child: Wrap(
             children: subInfo.wordKeys
                 .map((wk) => Text(wk.word, key: wk.key, style: subInfoStyle))
