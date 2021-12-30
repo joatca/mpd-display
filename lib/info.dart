@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'dart:async';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
@@ -216,9 +216,14 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       });
     }
     if (_state.scrollPoints.isNotEmpty) {
-      // converting elapsed time directly to seconds gives us one word per second
-      final wantedScroll = (_state.estimatedElapsed.toInt())
-          .remainder(_state.scrollPoints.length);
+      // converting elapsed time directly to seconds gives us one word per
+      // second; the extra 2 and constraining min() gives us a short pause on
+      // the final line
+      final wantedScroll = min(
+          _state.estimatedElapsed
+              .toInt()
+              .remainder(_state.scrollPoints.length + 2),
+          _state.scrollPoints.length - 1);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
         scrollTo(currentScroll);
@@ -229,7 +234,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   void scrollTo(int pos) async {
     final cntxt = _state.scrollPoints[pos].currentContext;
     if (cntxt != null) {
-      Scrollable.ensureVisible(
+      await Scrollable.ensureVisible(
         cntxt,
         duration: const Duration(seconds: 1),
         curve: Curves.easeInOut,
