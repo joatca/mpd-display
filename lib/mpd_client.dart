@@ -381,8 +381,8 @@ class MPDClient {
           if (md.containsKey("audio")) {
             techData.add(md["audio"]?.join("") ?? "");
           }
-          if (info.song > 0 && info.playlistlength > 0) {
-            techData.add("(${info.song}/${info.playlistlength})");
+          if (info.song >= 0 && info.playlistlength > 0) {
+            techData.add("(${info.song + 1}/${info.playlistlength})");
           }
           if (techData.isNotEmpty) {
             info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
@@ -445,7 +445,7 @@ class MPDClient {
               info.elapsed = double.parse(value ?? "0");
               break;
             case "song":
-              info.song = int.parse(value ?? "0");
+              info.song = int.parse(value ?? "-1");
               break;
             case "playlistlength":
               info.playlistlength = int.parse(value ?? "0");

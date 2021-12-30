@@ -239,7 +239,7 @@ class Info {
   double duration = 0; // seconds
   double elapsed = 0; // seconds
   double timestamp = 0; // when this info was created
-  int song = 0; // position in the playlist
+  int song = -1; // position in the playlist
   int playlistlength = 0; // length of the playlist
   String? fileType; // e.g. FLAC
 
