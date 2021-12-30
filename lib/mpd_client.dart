@@ -49,6 +49,9 @@ class MPDClient {
   bool stayConnected = false; // whether to reconnect on failure/disconnect
   late StreamController<Info> controller;
   final utf8 = const Utf8Codec(allowMalformed: true);
+  List<String> lineBuffer = [];
+  bool partialLine =
+      false; // did the last chunk of data received from MPD end without a newline?
 
   MPDClient() {
     controller = StreamController<Info>(
@@ -96,7 +99,8 @@ class MPDClient {
       if (kDebugMode) {
         print("connectSocket: connecting");
       }
-      Socket.connect(server, port, timeout: Duration(seconds: 5)).then((sock) {
+      Socket.connect(server, port, timeout: const Duration(seconds: 5))
+          .then((sock) {
         if (kDebugMode) {
           print("connectSocket: connected");
         }
@@ -140,15 +144,40 @@ class MPDClient {
   }
 
   void onData(Uint8List data) {
-    var lines = utf8.decode(data).trim().split("\n");
-    switch (connstate) {
-      case ConnState.connecting:
-        processConnecting(lines);
-        break;
-      case ConnState.command:
-      case ConnState.readoutput:
-        processMPDOutput(lines);
-        break;
+    final dataStr = utf8.decode(data);
+    final newIsPartial = !dataStr.endsWith('\n');
+    final newLines = dataStr.trim().split("\n");
+    if (kDebugMode) {
+      print(
+          "got ${newLines.length} new, partial $newIsPartial");
+    }
+    if (partialLine && lineBuffer.isNotEmpty) {
+      // the previous data was partial, so pop it off and prepend it to the new first line
+      newLines[0] = lineBuffer.removeLast() + newLines[0];
+      if (kDebugMode) {
+        print("previous was partial, adjusted to ${newLines[0]}");
+      }
+    }
+    lineBuffer.addAll(newLines);
+    partialLine = newIsPartial;
+    // only process the line buffer if it is *not* partial *and* it ends with OK or ACK
+    if (!partialLine &&
+        (lineBuffer.last.startsWith("OK") ||
+            lineBuffer.last.startsWith("ACK"))) {
+      switch (connstate) {
+        case ConnState.connecting:
+          processConnecting(lineBuffer);
+          break;
+        case ConnState.command:
+        case ConnState.readoutput:
+          processMPDOutput(lineBuffer);
+          break;
+      }
+      lineBuffer.clear(); // we processed it, clear the buffer
+    } else {
+      if (kDebugMode) {
+        print("partial new data, not processing yet: $lineBuffer");
+      }
     }
   }
 
@@ -244,7 +273,7 @@ class MPDClient {
     }
   }
 
-  void processConnecting(lines) {
+  void processConnecting(List<String> lines) {
     if (kDebugMode) {
       print("processConnecting");
     }
