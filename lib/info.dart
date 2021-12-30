@@ -160,13 +160,11 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Container(
-              child: TitleText(
-                state: info,
-                context: context,
-                box: constraints,
-                paddingBase: 8,
-              ),
+            TitleText(
+              state: info,
+              context: context,
+              box: constraints,
+              paddingBase: 8,
             ),
             Expanded(
               child: SubInfoList(
