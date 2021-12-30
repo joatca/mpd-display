@@ -27,11 +27,13 @@ class SubInfoList extends StatelessWidget {
     required this.context,
     required this.subInfos,
     required this.box,
+    required this.paddingBase,
   }) : super(key: key);
 
   final BuildContext context;
   final List<SubInfo> subInfos;
   final BoxConstraints box;
+  final double paddingBase;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +46,7 @@ class SubInfoList extends StatelessWidget {
         .map((si) => SubInfoRow(context: context, subInfo: si, lines: lines))
         .toList();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: paddingBase * 2, vertical: paddingBase),
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -69,7 +71,7 @@ class SubInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle =  Theme.of(context).textTheme.headline2;
+    final textStyle = Theme.of(context).textTheme.headline2;
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -91,7 +93,9 @@ class SubInfoRow extends StatelessWidget {
           //   maxLines: lines,
           //   style: Theme.of(context).textTheme.headline2,
           child: Wrap(
-            children: subInfo.wordKeys.map((wk) => Text(wk.word, key: wk.key, style: textStyle)).toList(),
+            children: subInfo.wordKeys
+                .map((wk) => Text(wk.word, key: wk.key, style: textStyle))
+                .toList(),
           ),
         ),
       ],
