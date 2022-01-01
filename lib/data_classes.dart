@@ -217,7 +217,6 @@ class SubInfo {
   String text;
   List<WordKey> wordKeys = [];
 
-
   SubInfo(this.type, this.text) {
     var i = 0;
     for (final word in text.split(" ").where((word) => word.isNotEmpty)) {
@@ -236,6 +235,7 @@ class Info {
   bool repeat = false;
   bool random = false;
   bool single = false;
+  bool consume = false;
   double duration = 0; // seconds
   double elapsed = 0; // seconds
   double timestamp = 0; // when this info was created
