@@ -148,8 +148,7 @@ class MPDClient {
     final newIsPartial = !dataStr.endsWith('\n');
     final newLines = dataStr.trim().split("\n");
     if (kDebugMode) {
-      print(
-          "got ${newLines.length} new, partial $newIsPartial");
+      print("got ${newLines.length} new, partial $newIsPartial");
     }
     if (partialLine && lineBuffer.isNotEmpty) {
       // the previous data was partial, so pop it off and prepend it to the new first line
@@ -382,7 +381,15 @@ class MPDClient {
             techData.add(md["audio"]?.join("") ?? "");
           }
           if (info.song >= 0 && info.playlistlength > 0) {
-            techData.add("(${info.song + 1}/${info.playlistlength})");
+            if (info.consume) {
+              // in consume mode we only show the number of remaining tracks,
+              // and it doesn't matter whether we are in random mode or not
+              techData.add("(+${info.playlistlength - 1})");
+            } else if (!info.random) {
+              // otherwise only show playlist position when not random, since in
+              // random mode it doesn't make sense
+              techData.add("(${info.song + 1}/${info.playlistlength})");
+            }
           }
           if (techData.isNotEmpty) {
             info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
@@ -421,6 +428,9 @@ class MPDClient {
               break;
             case "random":
               info.random = value == "1";
+              break;
+            case "consume":
+              info.consume = value == "1";
               break;
             case "single":
               info.single = value == "single";
@@ -492,7 +502,7 @@ class MPDClient {
     if (kDebugMode) {
       print("goIdle");
     }
-    sendCommand("idle player database playlist");
+    sendCommand("idle player database playlist options");
     connstate = ConnState.readoutput;
   }
 
