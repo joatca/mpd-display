@@ -25,6 +25,7 @@ class InfoTheme {
   static const double _defaultTitleSize =
       76; // default font sizes unless overridden
   static const double _defaultInfoSize = 60;
+  static const _defaultWeight = FontWeight.normal;
 
   String? font;
   Color? bgColor;
@@ -34,6 +35,7 @@ class InfoTheme {
   double titleSize;
   double infoSize;
   double height;
+  FontWeight weight;
 
   InfoTheme({
     this.font,
@@ -45,6 +47,7 @@ class InfoTheme {
     this.infoSize = _defaultInfoSize,
     this.height =
         1.0, // 1.0 is almost always unacceptable but we need a value so we can do lines calculations later
+    this.weight = _defaultWeight,
   });
 }
 
@@ -127,6 +130,7 @@ class PageState extends ChangeNotifier {
       titleColor: Colors.black,
       infoColor: Colors.black,
       height: 1.20,
+      weight: FontWeight.w600,
     ),
     "Clean Dark": InfoTheme(
       font: "Cantarell",
@@ -141,6 +145,7 @@ class PageState extends ChangeNotifier {
       titleColor: Colors.black,
       infoColor: Colors.black,
       height: 1.20,
+      weight: FontWeight.w600,
     ),
     "Formal Dark": InfoTheme(
       font: "NotoSerif",
@@ -158,6 +163,7 @@ class PageState extends ChangeNotifier {
       titleSize: 84,
       infoSize: 68,
       height: 1.1,
+      weight: FontWeight.w600,
     ),
     "Baroque Dark": InfoTheme(
       font: "Garamond",
