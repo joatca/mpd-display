@@ -20,7 +20,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:provider/provider.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'info_appbar.dart';
@@ -257,19 +256,24 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   void startListening() async {
     if (subscription == null) {
       subscription = infoStream.listen((info) {
-        setState(() {
-          if (info.state == PlayState.playing) {
-            Wakelock.enable();
-          } else {
-            Wakelock.disable();
+        if (info.isInfo) {
+          setState(() {
+            if (info.state == PlayState.playing) {
+              Wakelock.enable();
+            } else {
+              Wakelock.disable();
+            }
+            _state.info = info;
+            if (_state.sliderUpdateEnabled) {
+              _state.estimatedElapsed = _state.info.elapsed;
+            }
+          });
+          if (info.state != PlayState.stopped && info.subInfos.isNotEmpty) {
+            scrollTo(0);
           }
-          _state.info = info;
-          if (_state.sliderUpdateEnabled) {
-            _state.estimatedElapsed = _state.info.elapsed;
-          }
-        });
-        if (info.state != PlayState.stopped && info.subInfos.isNotEmpty) {
-          scrollTo(0);
+        } else {
+          // special message, handle later
+          print("Received message ${info.info}");
         }
       });
     } else {

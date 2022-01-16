@@ -78,7 +78,8 @@ class PageState extends ChangeNotifier {
   String defaultAppearanceTheme() => _appearanceThemes.keys.first;
 
   InfoFontTheme? fontTheme() => _fontThemes[fontThemeName] ?? InfoFontTheme();
-  InfoAppearanceTheme? appearanceTheme() => _appearanceThemes[appearanceThemeName] ?? InfoAppearanceTheme();
+  InfoAppearanceTheme? appearanceTheme() =>
+      _appearanceThemes[appearanceThemeName] ?? InfoAppearanceTheme();
 
   String fontSizeDescription() =>
       "${_fontSizeOffset == 0 ? " " : ""}$_fontSizeOffset";
@@ -142,7 +143,8 @@ class PageState extends ChangeNotifier {
     if (!_fontThemes.containsKey(fontName)) {
       fontName = _fontThemes.keys.first;
     }
-    var appearanceName = prefs.getString('appearancetheme') ?? defaultAppearanceTheme();
+    var appearanceName =
+        prefs.getString('appearancetheme') ?? defaultAppearanceTheme();
     // if appearance theme names have changed, ignore an invalid value
     if (!_appearanceThemes.containsKey(appearanceName)) {
       appearanceName = _appearanceThemes.keys.first;
@@ -265,6 +267,7 @@ class SubInfo {
 
 class Info {
   static final timeFormat = NumberFormat("00");
+  bool isInfo; // if true, actual info, if false, special message
   String? info; // the current track title or perhaps a status message
   List<SubInfo> subInfos = [];
   PlayState state = PlayState.stopped;
@@ -280,7 +283,7 @@ class Info {
   int playlistlength = 0; // length of the playlist
   String? fileType; // e.g. FLAC
 
-  Info({this.connected = false, this.info}) {
+  Info({this.connected = false, this.isInfo = true, this.info}) {
     timestamp = DateTime.now().millisecondsSinceEpoch.toDouble() / 1000;
   }
 

@@ -47,14 +47,14 @@ class MPDClient {
   Socket? socket;
   ConnState connstate = ConnState.connecting;
   bool stayConnected = false; // whether to reconnect on failure/disconnect
-  late StreamController<Info> controller;
+  late StreamController<Info> infoController;
   final utf8 = const Utf8Codec(allowMalformed: true);
   List<String> lineBuffer = [];
   bool partialLine =
       false; // did the last chunk of data received from MPD end without a newline?
 
   MPDClient() {
-    controller = StreamController<Info>(
+    infoController = StreamController<Info>(
         onListen: connect,
         onPause: disconnect,
         onResume: connect,
@@ -62,11 +62,11 @@ class MPDClient {
   }
 
   Stream<Info> infoStream() {
-    return controller.stream;
+    return infoController.stream;
   }
 
   void notifyDisconnected([String? msg]) {
-    controller.add(Info(
+    infoController.add(Info(
       connected: false,
       info: msg,
     ));
@@ -398,7 +398,7 @@ class MPDClient {
             print(
                 "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
           }
-          controller.add(info);
+          infoController.add(info);
         }
         info = Info(
             connected:
