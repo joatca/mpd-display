@@ -179,22 +179,22 @@ class PageState extends ChangeNotifier {
 
   static final _appearanceThemes = {
     "Readable Sky": InfoAppearanceTheme(
-      bgColor: Color(0xff484848),
+      bgColor: Color(0xff303030),
       titleColor: Color(0xff87ceeb),
       infoColor: Colors.white,
     ),
     "Readable Magnolia": InfoAppearanceTheme(
-      bgColor: Color(0xff484848),
+      bgColor: Color(0xff303030),
       titleColor: Color(0xfff1e1cc),
       infoColor: Colors.white,
     ),
     "Readable Gold": InfoAppearanceTheme(
-      bgColor: Color(0xff484848),
+      bgColor: Color(0xff303030),
       titleColor: Color(0xffffd700),
       infoColor: Colors.white,
     ),
     "Readable Fushia": InfoAppearanceTheme(
-      bgColor: Color(0xff484848),
+      bgColor: Color(0xff303030),
       titleColor: Color(0xffff80ff),
       infoColor: Colors.white,
     ),
