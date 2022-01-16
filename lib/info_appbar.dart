@@ -209,9 +209,9 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
                 builder: (context, pageState, child) => SingleChildScrollView(
                       child: Column(children: [
                         DropdownButton<String>(
-                          value: pageState.themeName,
+                          value: pageState.fontThemeName,
                           items: pageState
-                              .themeNames()
+                              .fontThemeNames()
                               .map((name) => DropdownMenuItem(
                                     child: Text(name),
                                     value: name,
@@ -219,7 +219,22 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
                               .toList(),
                           onChanged: (s) {
                             if (s != null) {
-                              pageState.setThemeName(s);
+                              pageState.setFontThemeName(s);
+                            }
+                          },
+                        ),
+                        DropdownButton<String>(
+                          value: pageState.appearanceThemeName,
+                          items: pageState
+                              .appearanceThemeNames()
+                              .map((name) => DropdownMenuItem(
+                                    child: Text(name),
+                                    value: name,
+                                  ))
+                              .toList(),
+                          onChanged: (s) {
+                            if (s != null) {
+                              pageState.setAppearanceThemeName(s);
                             }
                           },
                         ),

@@ -21,28 +21,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class InfoTheme {
+class InfoFontTheme {
   static const double _defaultTitleSize =
       76; // default font sizes unless overridden
   static const double _defaultInfoSize = 60;
   static const _defaultWeight = FontWeight.normal;
 
   String? font;
-  Color? bgColor;
-  Color? titleColor;
-  Color? infoColor;
-  Color? infoIconColor;
   double titleSize;
   double infoSize;
   double height;
   FontWeight weight;
 
-  InfoTheme({
+  InfoFontTheme({
     this.font,
-    this.bgColor,
-    this.titleColor,
-    this.infoColor,
-    this.infoIconColor,
     this.titleSize = _defaultTitleSize,
     this.infoSize = _defaultInfoSize,
     this.height =
@@ -51,8 +43,23 @@ class InfoTheme {
   });
 }
 
+class InfoAppearanceTheme {
+  Color? bgColor;
+  Color? titleColor;
+  Color? infoColor;
+  Color? infoIconColor;
+
+  InfoAppearanceTheme({
+    this.bgColor,
+    this.titleColor,
+    this.infoColor,
+    this.infoIconColor,
+  });
+}
+
 class PageState extends ChangeNotifier {
-  String _themeName = "Clean";
+  String _fontThemeName = "Clean";
+  String _appearanceThemeName = "Readable Blue";
   int _fontSizeOffset = 0;
   static const fontOffsetLimit = 3;
 
@@ -60,27 +67,38 @@ class PageState extends ChangeNotifier {
     _loadTheme();
   }
 
-  String get themeName => _themeName;
+  String get fontThemeName => _fontThemeName;
+  String get appearanceThemeName => _appearanceThemeName;
 
-  List<String> themeNames() => _themes.keys.toList();
+  List<String> fontThemeNames() => _fontThemes.keys.toList();
+  List<String> appearanceThemeNames() => _appearanceThemes.keys.toList();
 
-  String defaultTheme() => _themes.keys.first;
+  String defaultFontTheme() => _fontThemes.keys.first;
   int defaultFontSizeOffset() => 0;
+  String defaultAppearanceTheme() => _appearanceThemes.keys.first;
 
-  InfoTheme? theme() => _themes[themeName] ?? InfoTheme();
+  InfoFontTheme? fontTheme() => _fontThemes[fontThemeName] ?? InfoFontTheme();
+  InfoAppearanceTheme? appearanceTheme() => _appearanceThemes[appearanceThemeName] ?? InfoAppearanceTheme();
 
   String fontSizeDescription() =>
       "${_fontSizeOffset == 0 ? " " : ""}$_fontSizeOffset";
   double fontFactor() => 1 + (_fontSizeOffset * 0.1);
 
-  void setThemeName(String name) {
-    _themeName = name;
+  void setFontThemeName(String name) {
+    _fontThemeName = name;
     _saveTheme();
     notifyListeners();
   }
 
-  void setThemeAndFont(String name, int fontSz) {
-    _themeName = name;
+  void setAppearanceThemeName(String name) {
+    _appearanceThemeName = name;
+    _saveTheme();
+    notifyListeners();
+  }
+
+  void setThemeAndFontSize(String fontName, String appearanceName, int fontSz) {
+    _fontThemeName = fontName;
+    _appearanceThemeName = appearanceName;
     _fontSizeOffset = fontSz;
     _saveTheme();
     notifyListeners();
@@ -112,85 +130,98 @@ class PageState extends ChangeNotifier {
 
   void _saveTheme() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme', _themeName);
+    await prefs.setString('fonttheme', _fontThemeName);
+    await prefs.setString('appearancetheme', _appearanceThemeName);
     await prefs.setInt('fontsize', _fontSizeOffset);
   }
 
   void _loadTheme() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('theme') ?? defaultTheme();
+    var fontName = prefs.getString('fonttheme') ?? defaultFontTheme();
+    // if font theme names have changed, ignore an invalid value
+    if (!_fontThemes.containsKey(fontName)) {
+      fontName = _fontThemes.keys.first;
+    }
+    var appearanceName = prefs.getString('appearancetheme') ?? defaultAppearanceTheme();
+    // if appearance theme names have changed, ignore an invalid value
+    if (!_appearanceThemes.containsKey(appearanceName)) {
+      appearanceName = _appearanceThemes.keys.first;
+    }
     final fontSz = prefs.getInt('fontsize') ?? defaultFontSizeOffset();
-    setThemeAndFont(name, fontSz);
+    setThemeAndFontSize(fontName, appearanceName, fontSz);
   }
 
-  static final _themes = {
-    "Clean": InfoTheme(
+  static final _fontThemes = {
+    "Clean": InfoFontTheme(
       font: "Cantarell",
-      bgColor: Colors.white,
-      titleColor: Colors.black,
-      infoColor: Colors.black,
       height: 1.20,
       weight: FontWeight.w600,
     ),
-    "Clean Dark": InfoTheme(
-      font: "Cantarell",
-      bgColor: Colors.black,
-      titleColor: Colors.white,
-      infoColor: Colors.white,
-      height: 1.20,
-    ),
-    "Formal": InfoTheme(
+    "Formal": InfoFontTheme(
       font: "NotoSerif",
-      bgColor: Colors.white,
-      titleColor: Colors.black,
-      infoColor: Colors.black,
       height: 1.20,
       weight: FontWeight.w600,
     ),
-    "Formal Dark": InfoTheme(
-      font: "NotoSerif",
-      bgColor: Colors.black,
-      titleColor: Colors.white,
-      infoColor: Colors.white,
-      infoIconColor: Colors.white,
-      height: 1.20,
-    ),
-    "Baroque": InfoTheme(
+    "Baroque": InfoFontTheme(
       font: "Garamond",
-      bgColor: Colors.white,
-      titleColor: Colors.black,
-      infoColor: Colors.black,
       titleSize: 84,
       infoSize: 68,
       height: 1.1,
       weight: FontWeight.w600,
     ),
-    "Baroque Dark": InfoTheme(
-      font: "Garamond",
-      bgColor: Color(0xff303030),
-      titleColor: Color(0xffb8f0ff),
-      infoColor: Colors.white,
-      titleSize: 84,
-      infoSize: 68,
-      height: 1.1,
-    ),
-    "Highway": InfoTheme(
+    "Highway": InfoFontTheme(
       font: "Interstate",
+      titleSize: 80,
+      infoSize: 64,
+      height: 1.0,
+    ),
+  };
+
+  static final _appearanceThemes = {
+    "Readable Sky": InfoAppearanceTheme(
+      bgColor: Color(0xff484848),
+      titleColor: Color(0xff87ceeb),
+      infoColor: Colors.white,
+    ),
+    "Readable Magnolia": InfoAppearanceTheme(
+      bgColor: Color(0xff484848),
+      titleColor: Color(0xfff1e1cc),
+      infoColor: Colors.white,
+    ),
+    "Readable Gold": InfoAppearanceTheme(
+      bgColor: Color(0xff484848),
+      titleColor: Color(0xffffd700),
+      infoColor: Colors.white,
+    ),
+    "Readable Fushia": InfoAppearanceTheme(
+      bgColor: Color(0xff484848),
+      titleColor: Color(0xffff80ff),
+      infoColor: Colors.white,
+    ),
+    "Parchment": InfoAppearanceTheme(
+      bgColor: Color(0xffD6CCA9),
+      titleColor: Color(0xff101010),
+      infoColor: Color(0xff202020),
+    ),
+    "Canada Highway": InfoAppearanceTheme(
       bgColor: Color(0xff01A775),
       titleColor: Colors.white,
       infoColor: Colors.white,
-      titleSize: 80,
-      infoSize: 64,
-      height: 1.0,
     ),
-    "Highway Dark": InfoTheme(
-      font: "Interstate",
+    "UK Highway": InfoAppearanceTheme(
+      bgColor: Color(0xff007bc1),
+      titleColor: Colors.white,
+      infoColor: Colors.white,
+    ),
+    "Black On White": InfoAppearanceTheme(
+      bgColor: Colors.white,
+      titleColor: Colors.black,
+      infoColor: Colors.black,
+    ),
+    "White On Black": InfoAppearanceTheme(
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
-      titleSize: 80,
-      infoSize: 64,
-      height: 1.0,
     ),
   };
 }

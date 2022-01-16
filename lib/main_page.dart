@@ -41,32 +41,33 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<PageState>(builder: (context, pageState, child) {
-      final themeInfo = pageState.theme();
+      final fontThemeInfo = pageState.fontTheme();
+      final appearanceThemeInfo = pageState.appearanceTheme();
       final textTheme = Theme.of(context).textTheme.copyWith(
             headline1: TextStyle(
-              fontFamily: themeInfo?.font,
-              fontSize: (themeInfo?.titleSize ?? 1) * pageState.fontFactor(),
-              fontWeight: themeInfo?.weight,
-              color: themeInfo?.titleColor,
-              height: themeInfo?.height,
+              fontFamily: fontThemeInfo?.font,
+              fontSize: (fontThemeInfo?.titleSize ?? 1) * pageState.fontFactor(),
+              fontWeight: fontThemeInfo?.weight,
+              color: appearanceThemeInfo?.titleColor,
+              height: fontThemeInfo?.height,
             ),
             headline2: TextStyle(
-              fontFamily: themeInfo?.font,
-              fontSize: (themeInfo?.infoSize ?? 1) * pageState.fontFactor(),
-              fontWeight: themeInfo?.weight,
-              color: themeInfo?.infoColor,
-              height: themeInfo?.height,
+              fontFamily: fontThemeInfo?.font,
+              fontSize: (fontThemeInfo?.infoSize ?? 1) * pageState.fontFactor(),
+              fontWeight: fontThemeInfo?.weight,
+              color: appearanceThemeInfo?.infoColor,
+              height: fontThemeInfo?.height,
             ),
           );
       final iconTheme = Theme.of(context).iconTheme.copyWith(
-            color: themeInfo?.infoIconColor ?? themeInfo?.infoColor,
+            color: appearanceThemeInfo?.infoIconColor ?? appearanceThemeInfo?.infoColor,
           );
       final appbarTheme = Theme.of(context).appBarTheme.copyWith(
-            backgroundColor: themeInfo?.bgColor,
-            foregroundColor: themeInfo?.infoColor,
+            backgroundColor: appearanceThemeInfo?.bgColor,
+            foregroundColor: appearanceThemeInfo?.infoColor,
             iconTheme: iconTheme,
           );
-      final sliderColor = themeInfo?.infoColor;
+      final sliderColor = appearanceThemeInfo?.infoColor;
       final sliderTheme = Theme.of(context).sliderTheme.copyWith(
             activeTrackColor: sliderColor?.withOpacity(0.8),
             thumbColor: sliderColor,
@@ -74,7 +75,7 @@ class _MainPageState extends State<MainPage> {
           );
       final theme = Theme.of(context).copyWith(
         textTheme: textTheme,
-        scaffoldBackgroundColor: themeInfo?.bgColor,
+        scaffoldBackgroundColor: appearanceThemeInfo?.bgColor,
         appBarTheme: appbarTheme,
         sliderTheme: sliderTheme,
       );
