@@ -63,10 +63,10 @@ class _MainPageState extends State<MainPage> {
           );
       final appbarTheme = Theme.of(context).appBarTheme.copyWith(
             backgroundColor: themeInfo?.bgColor,
-            foregroundColor: themeInfo?.titleColor,
+            foregroundColor: themeInfo?.infoColor,
             iconTheme: iconTheme,
           );
-      final sliderColor = themeInfo?.titleColor;
+      final sliderColor = themeInfo?.infoColor;
       final sliderTheme = Theme.of(context).sliderTheme.copyWith(
             activeTrackColor: sliderColor?.withOpacity(0.8),
             thumbColor: sliderColor,

@@ -167,8 +167,8 @@ class PageState extends ChangeNotifier {
     ),
     "Baroque Dark": InfoTheme(
       font: "Garamond",
-      bgColor: Colors.black,
-      titleColor: Colors.white,
+      bgColor: Color(0xff303030),
+      titleColor: Color(0xffb8f0ff),
       infoColor: Colors.white,
       titleSize: 84,
       infoSize: 68,
