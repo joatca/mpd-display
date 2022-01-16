@@ -271,9 +271,21 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           if (info.state != PlayState.stopped && info.subInfos.isNotEmpty) {
             scrollTo(0);
           }
-        } else {
-          // special message, handle later
-          print("Received message ${info.info}");
+        } else { // this is a text message to be interpreted by the app (setting theme)
+          final msg = info.info;
+          if (msg != null) {
+            final words = msg.split("=").toList();
+            if (words.length == 2) {
+              switch(words[0]) {
+                case "f":
+                widget.pageState.setFontThemeName(words[1]);
+                break;
+                case "a":
+                widget.pageState.setAppearanceThemeName(words[1]);
+                break;
+              }
+            }
+          }
         }
       });
     } else {

@@ -279,7 +279,7 @@ class MPDClient {
     final mpdVersionPattern = RegExp(r'^OK MPD [.0-9]+$');
     if (lines.length >= 1 && mpdVersionPattern.hasMatch(lines[0])) {
       print("processConnecting: getstatus");
-      getStatus();
+      getStatus(subscribe: true);
     } else {
       if (kDebugMode) {
         print("processConnecting: not an MPD server: ${lines}");
@@ -312,6 +312,7 @@ class MPDClient {
     }
     var error = false;
     var changed = false;
+    var acceptMessage = false;
     var info = Info(connected: true); // info to be sent to the UI
     var md = HashMap<
         String,
@@ -435,6 +436,14 @@ class MPDClient {
             case "single":
               info.single = value == "single";
               break;
+            case "channel":
+              acceptMessage = value == "mpd-display";
+              break;
+            case "message":
+              if (acceptMessage) {
+                infoController.add(Info(isInfo: false, info: value));
+              }
+              break;
             case "state":
               switch (value) {
                 case "play":
@@ -502,15 +511,16 @@ class MPDClient {
     if (kDebugMode) {
       print("goIdle");
     }
-    sendCommand("idle player database playlist options");
+    sendCommand("idle player database playlist options message");
     connstate = ConnState.readoutput;
   }
 
-  void getStatus() {
+  void getStatus({bool subscribe = false}) {
     if (kDebugMode) {
       print("getStatus");
     }
-    sendCommand("command_list_begin\nstatus\ncurrentsong\ncommand_list_end");
+    sendCommand(
+        "command_list_begin\n${subscribe ? "subscribe mpd-display\n" : ""}status\ncurrentsong\nreadmessages\ncommand_list_end");
     connstate = ConnState.readoutput;
   }
 }

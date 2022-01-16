@@ -86,15 +86,19 @@ class PageState extends ChangeNotifier {
   double fontFactor() => 1 + (_fontSizeOffset * 0.1);
 
   void setFontThemeName(String name) {
-    _fontThemeName = name;
-    _saveTheme();
-    notifyListeners();
+    if (_fontThemes.containsKey(name)) {
+      _fontThemeName = name;
+      _saveTheme();
+      notifyListeners();
+    }
   }
 
   void setAppearanceThemeName(String name) {
-    _appearanceThemeName = name;
-    _saveTheme();
-    notifyListeners();
+    if (_appearanceThemes.containsKey(name)) {
+      _appearanceThemeName = name;
+      _saveTheme();
+      notifyListeners();
+    }
   }
 
   void setThemeAndFontSize(String fontName, String appearanceName, int fontSz) {
@@ -180,22 +184,22 @@ class PageState extends ChangeNotifier {
   };
 
   static final _appearanceThemes = {
-    "Readable Sky": InfoAppearanceTheme(
+    "Sky": InfoAppearanceTheme(
       bgColor: Color(0xff303030),
       titleColor: Color(0xff87ceeb),
       infoColor: Colors.white,
     ),
-    "Readable Magnolia": InfoAppearanceTheme(
+    "Magnolia": InfoAppearanceTheme(
       bgColor: Color(0xff303030),
       titleColor: Color(0xfff1e1cc),
       infoColor: Colors.white,
     ),
-    "Readable Gold": InfoAppearanceTheme(
+    "Gold": InfoAppearanceTheme(
       bgColor: Color(0xff303030),
       titleColor: Color(0xffffd700),
       infoColor: Colors.white,
     ),
-    "Readable Fushia": InfoAppearanceTheme(
+    "Fushia": InfoAppearanceTheme(
       bgColor: Color(0xff303030),
       titleColor: Color(0xffff80ff),
       infoColor: Colors.white,
