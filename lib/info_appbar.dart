@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'about.dart';
 import 'data_classes.dart';
 import 'info.dart';
@@ -29,12 +28,14 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
     Key? key,
     required this.context,
     required this.infoState,
+    required this.pageState,
     required this.mpd,
     required this.onSliderChanged,
   }) : super(key: key);
 
   final BuildContext context;
   final InfoState infoState;
+  final PageState pageState;
   final MPDClient mpd;
   final void Function(double v) onSliderChanged;
 
@@ -205,66 +206,65 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
         builder: (context) {
           return AlertDialog(
             title: const Text("Appearance"),
-            content: Consumer<PageState>(
-                builder: (context, pageState, child) => SingleChildScrollView(
-                      child: Column(children: [
-                        DropdownButton<String>(
-                          value: pageState.fontThemeName,
-                          items: pageState
-                              .fontThemeNames()
-                              .map((name) => DropdownMenuItem(
-                                    child: Text(name),
-                                    value: name,
-                                  ))
-                              .toList(),
-                          onChanged: (s) {
-                            if (s != null) {
-                              pageState.setFontThemeName(s);
-                            }
-                          },
-                        ),
-                        DropdownButton<String>(
-                          value: pageState.appearanceThemeName,
-                          items: pageState
-                              .appearanceThemeNames()
-                              .map((name) => DropdownMenuItem(
-                                    child: Text(name),
-                                    value: name,
-                                  ))
-                              .toList(),
-                          onChanged: (s) {
-                            if (s != null) {
-                              pageState.setAppearanceThemeName(s);
-                            }
-                          },
-                        ),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                onPressed: pageState.canDecFontSize()
-                                    ? () {
-                                        pageState.decFontSize();
-                                      }
-                                    : null,
-                                icon: const Icon(Icons
-                                    .arrow_downward), // text_decrease is blank - bug?
-                                tooltip: "Reduce text size",
-                              ),
-                              Text(pageState.fontSizeDescription()),
-                              IconButton(
-                                onPressed: pageState.canIncFontSize()
-                                    ? () {
-                                        pageState.incFontSize();
-                                      }
-                                    : null,
-                                icon: const Icon(Icons
-                                    .arrow_upward), // text_increase is blank - bug?
-                                tooltip: "Increase text size",
-                              ),
-                            ])
-                      ]),
-                    )),
+            content: SingleChildScrollView(
+              child: Column(children: [
+                DropdownButton<String>(
+                  value: pageState.fontThemeName,
+                  items: pageState
+                      .fontThemeNames()
+                      .map((name) => DropdownMenuItem(
+                            child: Text(name),
+                            value: name,
+                          ))
+                      .toList(),
+                  onChanged: (s) {
+                    if (s != null) {
+                      pageState.setFontThemeName(s);
+                    }
+                  },
+                ),
+                DropdownButton<String>(
+                  value: pageState.appearanceThemeName,
+                  items: pageState
+                      .appearanceThemeNames()
+                      .map((name) => DropdownMenuItem(
+                            child: Text(name),
+                            value: name,
+                          ))
+                      .toList(),
+                  onChanged: (s) {
+                    if (s != null) {
+                      pageState.setAppearanceThemeName(s);
+                    }
+                  },
+                ),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        onPressed: pageState.canDecFontSize()
+                            ? () {
+                                pageState.decFontSize();
+                              }
+                            : null,
+                        icon: const Icon(Icons
+                            .arrow_downward), // text_decrease is blank - bug?
+                        tooltip: "Reduce text size",
+                      ),
+                      Text(pageState.fontSizeDescription()),
+                      IconButton(
+                        onPressed: pageState.canIncFontSize()
+                            ? () {
+                                pageState.incFontSize();
+                              }
+                            : null,
+                        icon: const Icon(Icons
+                            .arrow_upward), // text_increase is blank - bug?
+                        tooltip: "Increase text size",
+                      ),
+                    ])
+              ]),
+            ),
             actions: <Widget>[
               TextButton(
                 child: const Text("Done"),

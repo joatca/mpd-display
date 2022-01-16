@@ -46,7 +46,8 @@ class _MainPageState extends State<MainPage> {
       final textTheme = Theme.of(context).textTheme.copyWith(
             headline1: TextStyle(
               fontFamily: fontThemeInfo?.font,
-              fontSize: (fontThemeInfo?.titleSize ?? 1) * pageState.fontFactor(),
+              fontSize:
+                  (fontThemeInfo?.titleSize ?? 1) * pageState.fontFactor(),
               fontWeight: fontThemeInfo?.weight,
               color: appearanceThemeInfo?.titleColor,
               height: fontThemeInfo?.height,
@@ -60,7 +61,8 @@ class _MainPageState extends State<MainPage> {
             ),
           );
       final iconTheme = Theme.of(context).iconTheme.copyWith(
-            color: appearanceThemeInfo?.infoIconColor ?? appearanceThemeInfo?.infoColor,
+            color: appearanceThemeInfo?.infoIconColor ??
+                appearanceThemeInfo?.infoColor,
           );
       final appbarTheme = Theme.of(context).appBarTheme.copyWith(
             backgroundColor: appearanceThemeInfo?.bgColor,
@@ -81,7 +83,7 @@ class _MainPageState extends State<MainPage> {
       );
       return Theme(
         data: theme,
-        child: InfoWidget(mpd: mpd, title: "MPD Display"),
+        child: InfoWidget(mpd: mpd, pageState: pageState, title: "MPD Display"),
       );
     });
   }

@@ -20,6 +20,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:provider/provider.dart';
 import 'data_classes.dart';
 import 'mpd_client.dart';
 import 'info_appbar.dart';
@@ -49,10 +50,15 @@ class InfoState {
 }
 
 class InfoWidget extends StatefulWidget {
-  const InfoWidget({Key? key, required this.mpd, required this.title})
+  const InfoWidget(
+      {Key? key,
+      required this.mpd,
+      required this.pageState,
+      required this.title})
       : super(key: key);
 
   final MPDClient mpd;
+  final PageState pageState;
   final String title;
 
   @override
@@ -60,7 +66,7 @@ class InfoWidget extends StatefulWidget {
 }
 
 class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
-  var _state = InfoState();
+  final _state = InfoState();
   late Stream<Info> infoStream;
   StreamSubscription<Info>? subscription;
   int currentScroll = 0;
@@ -114,6 +120,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       appBar: InfoAppBar(
           context: context,
           infoState: _state,
+          pageState: widget.pageState,
           mpd: widget.mpd,
           onSliderChanged: (val) {
             if (val <= _state.info.duration) {
