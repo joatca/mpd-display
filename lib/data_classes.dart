@@ -244,10 +244,14 @@ enum InfoType { album, performer, composer, station, technical }
 can be scrolled to */
 
 class WordKey {
-  final String word;
+  String word;
   final key = GlobalKey();
 
   WordKey(this.word);
+
+  void trimRight() {
+    word = word.trimRight();
+  }
 }
 
 /*
@@ -261,11 +265,10 @@ class SubInfo {
   List<WordKey> wordKeys = [];
 
   SubInfo(this.type, this.text) {
-    var i = 0;
     for (final word in text.split(" ").where((word) => word.isNotEmpty)) {
-      wordKeys.add(WordKey(i == 0 ? word : " $word"));
-      i++;
+      wordKeys.add(WordKey("$word "));
     }
+    wordKeys.last.trimRight();
   }
 }
 
