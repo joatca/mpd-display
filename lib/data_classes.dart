@@ -185,37 +185,37 @@ class PageState extends ChangeNotifier {
 
   static final _appearanceThemes = {
     "Sky": InfoAppearanceTheme(
-      bgColor: Color(0xff523622),
-      titleColor: Color(0xff87ceeb),
+      bgColor: const Color(0xff523622),
+      titleColor: const Color(0xff87ceeb),
       infoColor: Colors.white,
     ),
     "Magnolia": InfoAppearanceTheme(
-      bgColor: Color(0xff2d322f),
-      titleColor: Color(0xfff1e1cc),
+      bgColor: const Color(0xff2d322f),
+      titleColor: const Color(0xfff1e1cc),
       infoColor: Colors.white,
     ),
     "Gold": InfoAppearanceTheme(
-      bgColor: Color(0xff151538),
-      titleColor: Color(0xffffd700),
+      bgColor: const Color(0xff151538),
+      titleColor: const Color(0xffffd700),
       infoColor: Colors.white,
     ),
     "Fuchsia": InfoAppearanceTheme(
-      bgColor: Color(0xff103d10),
-      titleColor: Color(0xffff80ff),
+      bgColor: const Color(0xff103d10),
+      titleColor: const Color(0xffff80ff),
       infoColor: Colors.white,
     ),
     "Parchment": InfoAppearanceTheme(
-      bgColor: Color(0xffD6CCA9),
-      titleColor: Color(0xff101010),
-      infoColor: Color(0xff202020),
+      bgColor: const Color(0xffD6CCA9),
+      titleColor: const Color(0xff101010),
+      infoColor: const Color(0xff202020),
     ),
     "Canada Highway": InfoAppearanceTheme(
-      bgColor: Color(0xff01A775),
+      bgColor: const Color(0xff01A775),
       titleColor: Colors.white,
       infoColor: Colors.white,
     ),
     "UK Highway": InfoAppearanceTheme(
-      bgColor: Color(0xff007bc1),
+      bgColor: const Color(0xff007bc1),
       titleColor: Colors.white,
       infoColor: Colors.white,
     ),
