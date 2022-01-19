@@ -204,76 +204,82 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
     return showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: const Text("Appearance"),
-            content: SingleChildScrollView(
-              child: Column(children: [
-                DropdownButton<String>(
-                  value: pageState.fontThemeName,
-                  items: pageState
-                      .fontThemeNames()
-                      .map((name) => DropdownMenuItem(
-                            child: Text(name),
-                            value: name,
-                          ))
-                      .toList(),
-                  onChanged: (s) {
-                    if (s != null) {
-                      pageState.setFontThemeName(s);
-                    }
-                  },
-                ),
-                DropdownButton<String>(
-                  value: pageState.appearanceThemeName,
-                  items: pageState
-                      .appearanceThemeNames()
-                      .map((name) => DropdownMenuItem(
-                            child: Text(name),
-                            value: name,
-                          ))
-                      .toList(),
-                  onChanged: (s) {
-                    if (s != null) {
-                      pageState.setAppearanceThemeName(s);
-                    }
-                  },
-                ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        onPressed: pageState.canDecFontSize()
-                            ? () {
-                                pageState.decFontSize();
-                              }
-                            : null,
-                        icon: const Icon(Icons
-                            .arrow_downward), // text_decrease is blank - bug?
-                        tooltip: "Reduce text size",
-                      ),
-                      Text(pageState.fontSizeDescription()),
-                      IconButton(
-                        onPressed: pageState.canIncFontSize()
-                            ? () {
-                                pageState.incFontSize();
-                              }
-                            : null,
-                        icon: const Icon(Icons
-                            .arrow_upward), // text_increase is blank - bug?
-                        tooltip: "Increase text size",
-                      ),
-                    ])
-              ]),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text("Done"),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Appearance"),
+              content: SingleChildScrollView(
+                child: Column(children: [
+                  DropdownButton<String>(
+                    value: pageState.fontThemeName,
+                    items: pageState
+                        .fontThemeNames()
+                        .map((name) => DropdownMenuItem(
+                              child: Text(name),
+                              value: name,
+                            ))
+                        .toList(),
+                    onChanged: (s) {
+                      if (s != null) {
+                        setState(() {
+                          pageState.setFontThemeName(s);
+                        });
+                      }
+                    },
+                  ),
+                  DropdownButton<String>(
+                    value: pageState.appearanceThemeName,
+                    items: pageState
+                        .appearanceThemeNames()
+                        .map((name) => DropdownMenuItem(
+                              child: Text(name),
+                              value: name,
+                            ))
+                        .toList(),
+                    onChanged: (s) {
+                      if (s != null) {
+                        setState(() {
+                          pageState.setAppearanceThemeName(s);
+                        });
+                      }
+                    },
+                  ),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: pageState.canDecFontSize()
+                              ? () {
+                                  pageState.decFontSize();
+                                }
+                              : null,
+                          icon: const Icon(Icons
+                              .arrow_downward), // text_decrease is blank - bug?
+                          tooltip: "Reduce text size",
+                        ),
+                        Text(pageState.fontSizeDescription()),
+                        IconButton(
+                          onPressed: pageState.canIncFontSize()
+                              ? () {
+                                  pageState.incFontSize();
+                                }
+                              : null,
+                          icon: const Icon(Icons
+                              .arrow_upward), // text_increase is blank - bug?
+                          tooltip: "Increase text size",
+                        ),
+                      ])
+                ]),
               ),
-            ],
-          );
+              actions: <Widget>[
+                TextButton(
+                  child: const Text("Done"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          });
         });
   }
 }
