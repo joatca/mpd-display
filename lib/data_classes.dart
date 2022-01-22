@@ -205,7 +205,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.white,
     ),
     "Parchment": InfoAppearanceTheme(
-      bgColor: const Color(0xffD6CCA9),
+      bgColor: const Color(0xfff7ecc3),
       titleColor: const Color(0xff101040),
       infoColor: const Color(0xff202020),
     ),
