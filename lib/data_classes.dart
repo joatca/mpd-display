@@ -185,7 +185,7 @@ class PageState extends ChangeNotifier {
 
   static final _appearanceThemes = {
     "Sky": InfoAppearanceTheme(
-      bgColor: const Color(0xff523622),
+      bgColor: const Color(0xff300c0c),
       titleColor: const Color(0xff87ceeb),
       infoColor: Colors.white,
     ),
