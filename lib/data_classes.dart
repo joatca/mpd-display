@@ -200,7 +200,7 @@ class PageState extends ChangeNotifier {
       infoColor: Colors.white,
     ),
     "Fuchsia": InfoAppearanceTheme(
-      bgColor: const Color(0xff103d10),
+      bgColor: const Color(0xff202020),
       titleColor: const Color(0xffff80ff),
       infoColor: Colors.white,
     ),
