@@ -206,7 +206,7 @@ class PageState extends ChangeNotifier {
     ),
     "Parchment": InfoAppearanceTheme(
       bgColor: const Color(0xffD6CCA9),
-      titleColor: const Color(0xff101010),
+      titleColor: const Color(0xff101040),
       infoColor: const Color(0xff202020),
     ),
     "Canada Highway": InfoAppearanceTheme(
