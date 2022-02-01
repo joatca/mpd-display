@@ -375,22 +375,22 @@ class MPDClient {
           if (info.duration > 0) {
             techData.add(info.durationToString());
           }
-          if (info.fileType != null) {
-            techData.add(info.fileType!);
-          }
-          if (md.containsKey("audio")) {
-            techData.add(md["audio"]?.join("") ?? "");
-          }
           if (info.song >= 0 && info.playlistlength > 0) {
             if (info.consume) {
               // in consume mode we only show the number of remaining tracks,
               // and it doesn't matter whether we are in random mode or not
-              techData.add("(+${info.playlistlength - 1})");
+              techData.add("+${info.playlistlength - 1}");
             } else if (!info.random) {
               // otherwise only show playlist position when not random, since in
               // random mode it doesn't make sense
-              techData.add("(${info.song + 1}/${info.playlistlength})");
+              techData.add("${info.song + 1}/${info.playlistlength}");
             }
+          }
+          if (md.containsKey("genre")) {
+            techData.add(md["genre"]?.join("") ?? "");
+          }
+          if (info.fileType != null && md.containsKey("audio")) {
+            techData.add("${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
           }
           if (techData.isNotEmpty) {
             info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
@@ -480,6 +480,7 @@ class MPDClient {
             case "albumartist":
             case "composer":
             case "performer":
+            case "genre":
             case "name": // name of a radio station
             case "audio": // audio file details
               md.putIfAbsent(key, () => []).add(value ?? "?");
