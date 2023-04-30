@@ -184,37 +184,32 @@ class PageState extends ChangeNotifier {
   };
 
   static final _appearanceThemes = {
-    "Sky": InfoAppearanceTheme(
-      bgColor: const Color(0xff300c0c),
-      titleColor: const Color(0xff87ceeb),
-      infoColor: Colors.white,
-    ),
-    "Magnolia": InfoAppearanceTheme(
-      bgColor: const Color(0xff2d322f),
-      titleColor: const Color(0xfff1e1cc),
-      infoColor: Colors.white,
-    ),
     "Gold": InfoAppearanceTheme(
       bgColor: const Color(0xff151538),
       titleColor: const Color(0xffffd700),
-      infoColor: Colors.white,
+      infoColor: const Color(0xffe0e0e0),
     ),
-    "Fuchsia": InfoAppearanceTheme(
-      bgColor: const Color(0xff202020),
-      titleColor: const Color(0xffff80ff),
-      infoColor: Colors.white,
+    "Nightsky": InfoAppearanceTheme(
+      bgColor: const Color(0x80483475),
+      titleColor: const Color(0xffffffff),
+      infoColor: const Color(0xffd0d0ff),
+    ),
+    "Rainforest": InfoAppearanceTheme(
+      bgColor: const Color(0x806e2e05),
+      titleColor: const Color(0xfff8bf00),
+      infoColor: const Color(0xff87df25),
     ),
     "Parchment": InfoAppearanceTheme(
       bgColor: const Color(0xfff7ecc3),
       titleColor: const Color(0xff101040),
       infoColor: const Color(0xff202020),
     ),
-    "Black-On-White": InfoAppearanceTheme(
+    "Light": InfoAppearanceTheme(
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "White-On-Black": InfoAppearanceTheme(
+    "Dark": InfoAppearanceTheme(
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,
