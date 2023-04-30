@@ -210,7 +210,7 @@ class PageState extends ChangeNotifier {
       titleColor: const Color(0xff101040),
       infoColor: const Color(0xff202020),
     ),
-    "Retroglow": InfoAppearanceTheme(
+    "VFD": InfoAppearanceTheme(
       bgColor: const Color(0xff000000),
       titleColor: const Color(0xff11ffee),
       infoColor: const Color(0xff11ffee),
