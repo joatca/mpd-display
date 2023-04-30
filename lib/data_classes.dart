@@ -175,8 +175,8 @@ class PageState extends ChangeNotifier {
       height: 1.1,
       weight: FontWeight.w600,
     ),
-    "Highway": InfoFontTheme(
-      font: "Interstate",
+    "Techno": InfoFontTheme(
+      font: "Jura",
       titleSize: 80,
       infoSize: 64,
       height: 1.0,
@@ -209,22 +209,12 @@ class PageState extends ChangeNotifier {
       titleColor: const Color(0xff101040),
       infoColor: const Color(0xff202020),
     ),
-    "Canada Highway": InfoAppearanceTheme(
-      bgColor: const Color(0xff01A775),
-      titleColor: Colors.white,
-      infoColor: Colors.white,
-    ),
-    "UK Highway": InfoAppearanceTheme(
-      bgColor: const Color(0xff007bc1),
-      titleColor: Colors.white,
-      infoColor: Colors.white,
-    ),
-    "Black On White": InfoAppearanceTheme(
+    "Black-On-White": InfoAppearanceTheme(
       bgColor: Colors.white,
       titleColor: Colors.black,
       infoColor: Colors.black,
     ),
-    "White On Black": InfoAppearanceTheme(
+    "White-On-Black": InfoAppearanceTheme(
       bgColor: Colors.black,
       titleColor: Colors.white,
       infoColor: Colors.white,

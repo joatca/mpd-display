@@ -79,6 +79,6 @@ flutter:
     - family: Garamond
       fonts:
         - asset: fonts/EBGaramond.ttf
-    - family: Interstate
+    - family: Jura
       fonts:
-        - asset: fonts/Interstate-regular.ttf
+        - asset: fonts/Jura-SemiBold.ttf
