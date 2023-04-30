@@ -238,7 +238,7 @@ enum PlayState {
   playing,
 }
 
-enum InfoType { album, performer, composer, station, technical }
+enum InfoType { album, performer, composer, station, genre, queueinfo, technical }
 
 /* represents a word within a subinfo text and the associated global key, so it
 can be scrolled to */
@@ -303,6 +303,10 @@ class Info {
     }
   }
 
+  void add(InfoType type, String val) {
+    subInfos.add(SubInfo(type, val));
+  }
+    
   void addAll(InfoType type, List<String>? vals) {
     for (final val in vals ?? []) {
       subInfos.add(SubInfo(type, val));

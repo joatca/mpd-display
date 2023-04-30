@@ -73,7 +73,8 @@ class SubInfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subInfoStyle = Theme.of(context).textTheme.headline2;
-    final iconSize = (subInfoStyle?.fontSize ?? 1) * (subInfoStyle?.height ?? 1);
+    final iconSize =
+        (subInfoStyle?.fontSize ?? 1) * (subInfoStyle?.height ?? 1);
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,15 +101,19 @@ class SubInfoRow extends StatelessWidget {
   IconData infoTypeToIcon(InfoType type) {
     switch (type) {
       case InfoType.album:
-        return Icons.album;
+        return Icons.album_outlined;
       case InfoType.composer:
         return Icons.edit;
       case InfoType.performer:
         return Icons.piano;
       case InfoType.station:
         return Icons.radio;
+      case InfoType.queueinfo:
+        return Icons.queue_music;
+      case InfoType.genre:
+        return Icons.label;
       case InfoType.technical:
-        return Icons.info_outline;
+        return Icons.memory;
       default:
         return Icons.device_unknown;
     }

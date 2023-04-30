@@ -371,29 +371,27 @@ class MPDClient {
           info.addAll(InfoType.performer, md["albumartist"]);
           info.addAll(InfoType.album, md["album"]);
           info.addAll(InfoType.station, md["name"]);
-          var techData = <String>[];
+          info.addAll(InfoType.genre, md["genre"]);
+          var queueData = <String>[];
           if (info.duration > 0) {
-            techData.add(info.durationToString());
+            queueData.add(info.durationToString());
           }
           if (info.song >= 0 && info.playlistlength > 0) {
             if (info.consume) {
               // in consume mode we only show the number of remaining tracks,
               // and it doesn't matter whether we are in random mode or not
-              techData.add("+${info.playlistlength - 1}");
+              queueData.add("+${info.playlistlength - 1}");
             } else if (!info.random) {
               // otherwise only show playlist position when not random, since in
               // random mode it doesn't make sense
-              techData.add("${info.song + 1}/${info.playlistlength}");
+              queueData.add("${info.song + 1}/${info.playlistlength}");
             }
           }
-          if (md.containsKey("genre")) {
-            techData.add(md["genre"]?.join("") ?? "");
+          if (queueData.isNotEmpty) {
+            info.subInfos.add(SubInfo(InfoType.queueinfo, queueData.join(" ")));
           }
           if (info.fileType != null && md.containsKey("audio")) {
-            techData.add("${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
-          }
-          if (techData.isNotEmpty) {
-            info.subInfos.add(SubInfo(InfoType.technical, techData.join(" ")));
+            info.add(InfoType.technical, "${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
           }
           if (kDebugMode) {
             print(

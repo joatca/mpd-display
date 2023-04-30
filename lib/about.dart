@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 mixin TextUtil {
   pad(String text, TextStyle? style) {
@@ -45,7 +45,7 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
   static const title = 'MPD Display';
   static const url = 'https://apps.joat.me/page/mpd-display/';
   static const ppUrl = 'https://apps.joat.me/page/privacy';
-  static const copyYear = '2021';
+  static const copyYear = '2023';
   static const copyright = 'Fraser McCrossan';
   static const fontCopy = 'The fonts used in this application have been chosen for their readability at a distance. "Clean" themes use the font Cantarell, "Formal" themes use Noto Serif, and "Baroque" themes use EB Garamond, all from Google Fonts. "Highway" themes use Interstate, by Tobias Frere-Jones.';
   static const license =
@@ -68,11 +68,11 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          pad(title, theme.headline5),
-          pad('Version $_version', theme.bodyText2),
-          pad('Copyright ⓒ $copyYear $copyright', theme.bodyText2),
-          pad(fontCopy, theme.bodyText2),
-          pad(license, theme.bodyText1),
+          pad(title, theme.headlineSmall),
+          pad('Version $_version', theme.bodyMedium),
+          pad('Copyright ⓒ $copyYear $copyright', theme.bodyMedium),
+          pad(fontCopy, theme.bodyMedium),
+          pad(license, theme.bodyLarge),
           Expanded(
               child: Align(
                   alignment: Alignment.bottomCenter,
@@ -108,8 +108,8 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
   }
 
   _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
     } else {
       throw 'Could not launch $url';
     }
