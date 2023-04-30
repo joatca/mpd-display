@@ -249,7 +249,9 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
                         IconButton(
                           onPressed: pageState.canDecFontSize()
                               ? () {
-                                  pageState.decFontSize();
+                                  setState(() {
+                                    pageState.decFontSize();
+                                  });
                                 }
                               : null,
                           icon: const Icon(Icons
@@ -260,7 +262,9 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
                         IconButton(
                           onPressed: pageState.canIncFontSize()
                               ? () {
-                                  pageState.incFontSize();
+                                  setState(() {
+                                    pageState.incFontSize();
+                                  });
                                 }
                               : null,
                           icon: const Icon(Icons
