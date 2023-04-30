@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -277,12 +276,14 @@ class MPDClient {
       print("processConnecting");
     }
     final mpdVersionPattern = RegExp(r'^OK MPD [.0-9]+$');
-    if (lines.length >= 1 && mpdVersionPattern.hasMatch(lines[0])) {
-      print("processConnecting: getstatus");
+    if (lines.isNotEmpty && mpdVersionPattern.hasMatch(lines[0])) {
+      if (kDebugMode) {
+        print("processConnecting: getstatus");
+      }
       getStatus(subscribe: true);
     } else {
       if (kDebugMode) {
-        print("processConnecting: not an MPD server: ${lines}");
+        print("processConnecting: not an MPD server: $lines");
       }
       notifyDisconnected("Not an MPD player");
     }
@@ -369,7 +370,8 @@ class MPDClient {
           }
           info.addAll(InfoType.performer, md["performer"]);
           info.addAll(InfoType.performer, md["albumartist"]);
-          var trackDetails = md.containsKey("track") ? " (#${md["track"]?.first ?? "?"})" : "";
+          var trackDetails =
+              md.containsKey("track") ? " (#${md["track"]?.first ?? "?"})" : "";
           info.addAll(InfoType.album, md["album"], trackDetails);
           info.addAll(InfoType.station, md["name"]);
           info.addAll(InfoType.genre, md["genre"]);

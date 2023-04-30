@@ -305,6 +305,7 @@ class Info {
 
   bool isEmpty() => (info == null) && subInfos.isEmpty;
 
+  @override
   String toString() {
     return "info $info subinfos ${subInfos.length}${repeat ? " [Rpt]" : ""}${random ? " [Rnd]" : ""}${single ? " [Sgl]" : ""}";
   }

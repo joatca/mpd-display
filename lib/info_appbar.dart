@@ -87,7 +87,7 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AboutPage()),
+            MaterialPageRoute(builder: (context) => const AboutPage()),
           );
         },
         icon: const Icon(Icons.info),
@@ -214,8 +214,8 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
                     items: pageState
                         .fontThemeNames()
                         .map((name) => DropdownMenuItem(
-                              child: Text(name),
                               value: name,
+                              child: Text(name),
                             ))
                         .toList(),
                     onChanged: (s) {
@@ -231,8 +231,8 @@ class InfoAppBar extends StatelessWidget implements PreferredSizeWidget {
                     items: pageState
                         .appearanceThemeNames()
                         .map((name) => DropdownMenuItem(
-                              child: Text(name),
                               value: name,
+                              child: Text(name),
                             ))
                         .toList(),
                     onChanged: (s) {

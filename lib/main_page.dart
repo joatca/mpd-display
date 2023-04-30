@@ -44,7 +44,7 @@ class _MainPageState extends State<MainPage> {
       final fontThemeInfo = pageState.fontTheme();
       final appearanceThemeInfo = pageState.appearanceTheme();
       final textTheme = Theme.of(context).textTheme.copyWith(
-            headline1: TextStyle(
+            displayLarge: TextStyle(
               fontFamily: fontThemeInfo?.font,
               fontSize:
                   (fontThemeInfo?.titleSize ?? 1) * pageState.fontFactor(),
@@ -52,7 +52,7 @@ class _MainPageState extends State<MainPage> {
               color: appearanceThemeInfo?.titleColor,
               height: fontThemeInfo?.height,
             ),
-            headline2: TextStyle(
+            displayMedium: TextStyle(
               fontFamily: fontThemeInfo?.font,
               fontSize: (fontThemeInfo?.infoSize ?? 1) * pageState.fontFactor(),
               fontWeight: fontThemeInfo?.weight,

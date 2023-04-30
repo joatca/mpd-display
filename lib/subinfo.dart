@@ -38,10 +38,10 @@ class SubInfoList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // compute how many subinfo text lines will fit in roughtly half of the screen
-    final theme = Theme.of(context).textTheme.headline2;
+    final theme = Theme.of(context).textTheme.displayMedium;
     final double fontSize = (theme?.fontSize ?? 1) * (theme?.height ?? 1);
     // in case fontSize above was null make lines at least 3
-    final lines = max(3, (box.maxHeight / fontSize / 2).toInt());
+    final lines = max(3, (box.maxHeight ~/ fontSize ~/ 2));
     var children = subInfos
         .map((si) => SubInfoRow(context: context, subInfo: si, lines: lines))
         .toList();
@@ -72,7 +72,7 @@ class SubInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subInfoStyle = Theme.of(context).textTheme.headline2;
+    final subInfoStyle = Theme.of(context).textTheme.displayMedium;
     final iconSize =
         (subInfoStyle?.fontSize ?? 1) * (subInfoStyle?.height ?? 1);
     return Row(

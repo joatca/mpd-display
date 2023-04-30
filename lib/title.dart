@@ -39,10 +39,10 @@ class TitleText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // compute how many title text lines will fit in roughtly half of the screen
-    final titleStyle = Theme.of(context).textTheme.headline1;
+    final titleStyle = Theme.of(context).textTheme.displayLarge;
     final double titleFontSize =
         (titleStyle?.fontSize ?? 1) * (titleStyle?.height ?? 1);
-    final subInfoStyle = Theme.of(context).textTheme.headline1;
+    final subInfoStyle = Theme.of(context).textTheme.displayLarge;
     final double subInfoFontSize =
         (subInfoStyle?.fontSize ?? 1) * (subInfoStyle?.height ?? 1);
     // the biggest the title section can be is the height of the render box minus one line of subinfo plus padding
@@ -58,7 +58,7 @@ class TitleText extends StatelessWidget {
         softWrap: true,
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.headline1,
+        style: Theme.of(context).textTheme.displayLarge,
       ),
     );
   }

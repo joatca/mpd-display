@@ -24,7 +24,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 mixin TextUtil {
   pad(String text, TextStyle? style) {
     return Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Text(
           text,
           style: style,
@@ -33,12 +33,12 @@ mixin TextUtil {
 }
 
 class AboutPage extends StatefulWidget {
-  AboutPage({Key? key, this.title}) : super(key: key);
+  const AboutPage({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  _AboutPageState createState() => _AboutPageState();
+  State<AboutPage> createState() => _AboutPageState();
 }
 
 class _AboutPageState extends State<AboutPage> with TextUtil {
@@ -83,14 +83,14 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
                           onPressed: () {
                             _launchURL(url);
                           },
-                          child: Text(
+                          child: const Text(
                             'App page',
                           )),
                       TextButton(
                           onPressed: () {
                             _launchURL(ppUrl);
                           },
-                          child: Text(
+                          child: const Text(
                             'Privacy Policy',
                           )),
                     ],

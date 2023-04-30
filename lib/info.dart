@@ -79,14 +79,14 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     okGo();
   }
 
   @override
   void dispose() {
     stopThat();
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     subscription?.cancel();
     super.dispose();
   }
@@ -189,7 +189,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   Widget emptyLayout(
       BuildContext context, BoxConstraints constraints, IconData icon,
       [String? msg]) {
-    final textStyle = Theme.of(context).textTheme.headline1;
+    final textStyle = Theme.of(context).textTheme.displayLarge;
     return Center(
       child: Column(
         children: [
