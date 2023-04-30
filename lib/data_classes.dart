@@ -181,6 +181,12 @@ class PageState extends ChangeNotifier {
       infoSize: 64,
       height: 1.0,
     ),
+    "Matrix": InfoFontTheme(
+      font: "Dot",
+      titleSize: 86,
+      infoSize: 66,
+      height: 1.0,
+    ),
   };
 
   static final _appearanceThemes = {
@@ -203,6 +209,11 @@ class PageState extends ChangeNotifier {
       bgColor: const Color(0xfff7ecc3),
       titleColor: const Color(0xff101040),
       infoColor: const Color(0xff202020),
+    ),
+    "Retroglow": InfoAppearanceTheme(
+      bgColor: const Color(0xff000000),
+      titleColor: const Color(0xff11ffee),
+      infoColor: const Color(0xff11ffee),
     ),
     "Light": InfoAppearanceTheme(
       bgColor: Colors.white,

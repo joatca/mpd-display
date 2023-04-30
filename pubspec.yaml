@@ -82,3 +82,6 @@ flutter:
     - family: Jura
       fonts:
         - asset: fonts/Jura-SemiBold.ttf
+    - family: Dot
+      fonts:
+        - asset: fonts/led-counter-7.italic.ttf
