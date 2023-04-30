@@ -297,9 +297,9 @@ class Info {
     subInfos.add(SubInfo(type, val));
   }
     
-  void addAll(InfoType type, List<String>? vals) {
+  void addAll(InfoType type, List<String>? vals, [ String suffix = "" ]) {
     for (final val in vals ?? []) {
-      subInfos.add(SubInfo(type, val));
+      subInfos.add(SubInfo(type, "$val$suffix"));
     }
   }
 

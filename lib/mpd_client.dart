@@ -369,7 +369,8 @@ class MPDClient {
           }
           info.addAll(InfoType.performer, md["performer"]);
           info.addAll(InfoType.performer, md["albumartist"]);
-          info.addAll(InfoType.album, md["album"]);
+          var trackDetails = md.containsKey("track") ? " (#${md["track"]?.first ?? "?"})" : "";
+          info.addAll(InfoType.album, md["album"], trackDetails);
           info.addAll(InfoType.station, md["name"]);
           info.addAll(InfoType.genre, md["genre"]);
           var queueData = <String>[];
@@ -391,7 +392,8 @@ class MPDClient {
             info.subInfos.add(SubInfo(InfoType.queueinfo, queueData.join(" ")));
           }
           if (info.fileType != null && md.containsKey("audio")) {
-            info.add(InfoType.technical, "${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
+            info.add(InfoType.technical,
+                "${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
           }
           if (kDebugMode) {
             print(
@@ -479,6 +481,7 @@ class MPDClient {
             case "composer":
             case "performer":
             case "genre":
+            case "track":
             case "name": // name of a radio station
             case "audio": // audio file details
               md.putIfAbsent(key, () => []).add(value ?? "?");
