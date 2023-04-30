@@ -70,9 +70,9 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
 
   fonts:
-    - family: Cantarell
+    - family: Roboto
       fonts:
-        - asset: fonts/Cantarell-Regular.ttf
+        - asset: fonts/Roboto-Medium.ttf
     - family: NotoSerif
       fonts:
         - asset: fonts/NotoSerif-Regular.ttf

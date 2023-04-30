@@ -159,7 +159,7 @@ class PageState extends ChangeNotifier {
 
   static final _fontThemes = {
     "Clean": InfoFontTheme(
-      font: "Cantarell",
+      font: "Roboto",
       height: 1.20,
       weight: FontWeight.w600,
     ),
