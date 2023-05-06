@@ -18,6 +18,9 @@ migration:
     - platform: android
       create_revision: db7196c52cf8ce7313dc61139f095d5d29615e48
       base_revision: db7196c52cf8ce7313dc61139f095d5d29615e48
+    - platform: linux
+      create_revision: db7196c52cf8ce7313dc61139f095d5d29615e48
+      base_revision: db7196c52cf8ce7313dc61139f095d5d29615e48
 
   # User provided section
 
