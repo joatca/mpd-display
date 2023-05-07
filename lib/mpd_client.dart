@@ -28,7 +28,7 @@ import 'data_classes.dart';
 
 /* this data class connects to an MPD server and sends play state data on the supplied stream */
 
-type Lines = List<String>;
+typedef Lines = List<String>;
 typedef Response = HashMap<String, List<String>>;
 
 enum ConnState {
