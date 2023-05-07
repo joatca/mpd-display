@@ -52,7 +52,7 @@ class MPDClient {
   late StreamController<Info> infoController;
   final utf8 = const Utf8Codec(allowMalformed: true);
   Lines lineBuffer = [];
-  bool partialLine =
+  bool partialLineRemaining =
       false; // did the last chunk of data received from MPD end without a newline?
 
   MPDClient() {
@@ -152,7 +152,7 @@ class MPDClient {
     if (kDebugMode) {
       print("got ${newLines.length} new, partial $newIsPartial");
     }
-    if (partialLine && lineBuffer.isNotEmpty) {
+    if (partialLineRemaining && lineBuffer.isNotEmpty) {
       // the previous data was partial, so pop it off and prepend it to the new first line
       newLines[0] = lineBuffer.removeLast() + newLines[0];
       if (kDebugMode) {
@@ -160,9 +160,9 @@ class MPDClient {
       }
     }
     lineBuffer.addAll(newLines);
-    partialLine = newIsPartial;
+    partialLineRemaining = newIsPartial;
     // only process the line buffer if it is *not* partial *and* it ends with OK or ACK
-    if (!partialLine &&
+    if (!partialLineRemaining &&
         (lineBuffer.last.startsWith("OK") ||
             lineBuffer.last.startsWith("ACK"))) {
       switch (connstate) {
