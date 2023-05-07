@@ -28,6 +28,7 @@ import 'data_classes.dart';
 
 /* this data class connects to an MPD server and sends play state data on the supplied stream */
 
+type Lines = List<String>;
 typedef Response = HashMap<String, List<String>>;
 
 enum ConnState {
@@ -50,7 +51,7 @@ class MPDClient {
   bool stayConnected = false; // whether to reconnect on failure/disconnect
   late StreamController<Info> infoController;
   final utf8 = const Utf8Codec(allowMalformed: true);
-  List<String> lineBuffer = [];
+  Lines lineBuffer = [];
   bool partialLine =
       false; // did the last chunk of data received from MPD end without a newline?
 
@@ -273,7 +274,7 @@ class MPDClient {
     }
   }
 
-  void processConnecting(List<String> lines) {
+  void processConnecting(Lines lines) {
     if (kDebugMode) {
       print("processConnecting");
     }
@@ -291,7 +292,7 @@ class MPDClient {
     }
   }
 
-  void processCommand(List<String> lines) {
+  void processCommand(Lines lines) {
     if (kDebugMode) {
       print("processCommand");
     }
@@ -309,14 +310,15 @@ class MPDClient {
     }
   }
 
-  void processMPDResponse(List<String> lines) {
+  void processMPDResponse(Lines lines) {
     if (kDebugMode) {
       print("processMPDOutput");
     }
     var error = false;
     var changed = false;
     var info = Info(connected: true); // info to be sent to the UI
-    var md = Response(); // temporary storage of interesting metadata before processing
+    var md =
+        Response(); // temporary storage of interesting metadata before processing
     final dataPattern = RegExp(r'^([^:]+): (.*)$');
     final okPattern = RegExp(r'^OK');
     final ackPattern = RegExp(r'^ACK');
