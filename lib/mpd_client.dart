@@ -28,6 +28,8 @@ import 'data_classes.dart';
 
 /* this data class connects to an MPD server and sends play state data on the supplied stream */
 
+typedef Response = HashMap<String, List<String>>;
+
 enum ConnState {
   connecting, // we have just connected and we're waiting for a response
   //idle, // we sent the idle command and are waiting for a response
@@ -314,10 +316,7 @@ class MPDClient {
     var error = false;
     var changed = false;
     var info = Info(connected: true); // info to be sent to the UI
-    var md = HashMap<
-        String,
-        List<
-            String>>(); // temporary storage of interesting metadata before processing
+    var md = Response(); // temporary storage of interesting metadata before processing
     final dataPattern = RegExp(r'^([^:]+): (.*)$');
     final okPattern = RegExp(r'^OK');
     final ackPattern = RegExp(r'^ACK');
@@ -396,7 +395,7 @@ class MPDClient {
     }
   }
 
-  void cleanMetaData(HashMap<String, List<String>> md) {
+  void cleanMetaData(Response md) {
     // check various metadata scenarios, but only if state isn't stopped
     // for classical sometimes the artist tag contains the composer and
     // sometimes the performer; let's handle those situations as sensibly as
@@ -415,7 +414,7 @@ class MPDClient {
   }
 
   void updateInfoAndMetaData(
-      Info info, HashMap<String, List<String>> md, String key, String? value) {
+      Info info, Response md, String key, String? value) {
     switch (key) {
       case "repeat":
         info.repeat = value == "1";
@@ -474,7 +473,7 @@ class MPDClient {
     }
   }
 
-  void copyMetaDataToInfo(HashMap<String, List<String>> md, Info info) {
+  void copyMetaDataToInfo(Response md, Info info) {
     // the addAll methods handle nulls and empty lists as no-ops, the clever logic is the deletion and renaming above
     info.addAll(InfoType.composer, md["composer"]);
     if (md.containsKey("performer")) {
