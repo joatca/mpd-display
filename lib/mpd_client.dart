@@ -31,7 +31,7 @@ import 'data_classes.dart';
 enum ConnState {
   connecting, // we have just connected and we're waiting for a response
   //idle, // we sent the idle command and are waiting for a response
-  readoutput, // we sent commands to fetch the state and are waiting for a response
+  readResponse, // we sent commands to fetch the state and are waiting for a response
   command, // we sent a command (like play) and are waiting for a response
 }
 
@@ -167,8 +167,8 @@ class MPDClient {
           processConnecting(lineBuffer);
           break;
         case ConnState.command:
-        case ConnState.readoutput:
-          processMPDOutput(lineBuffer);
+        case ConnState.readResponse:
+          processMPDResponse(lineBuffer);
           break;
       }
       lineBuffer.clear(); // we processed it, clear the buffer
@@ -307,13 +307,12 @@ class MPDClient {
     }
   }
 
-  void processMPDOutput(List<String> lines) {
+  void processMPDResponse(List<String> lines) {
     if (kDebugMode) {
       print("processMPDOutput");
     }
     var error = false;
     var changed = false;
-    var acceptMessage = false;
     var info = Info(connected: true); // info to be sent to the UI
     var md = HashMap<
         String,
@@ -322,6 +321,7 @@ class MPDClient {
     final dataPattern = RegExp(r'^([^:]+): (.*)$');
     final okPattern = RegExp(r'^OK');
     final ackPattern = RegExp(r'^ACK');
+    final changedPattern = RegExp(r'^changed:');
     var sectionLineCount = 0;
     if (kDebugMode) {
       print("processMPDOutput: reading lines in state: $connstate");
@@ -333,7 +333,6 @@ class MPDClient {
         }
         break; // ignore the rest of the lines
       }
-      //print("processMPDOutput: processing line: $line");
       if (okPattern.hasMatch(line)) {
         if (kDebugMode) {
           print("processMPDOutput: OK detected");
@@ -344,68 +343,16 @@ class MPDClient {
           if (kDebugMode) {
             print("processMPDOutput: processing metadata");
           }
-          // check various metadata scenarios, but only if state isn't stopped
-          // for classical sometimes the artist tag contains the composer and
-          // sometimes the performer; let's handle those situations as sensibly as
-          // possible
-          // delete artist if the same as composer or performer
-          if (listEquals(md["artist"], md["composer"]) ||
-              listEquals(md["artist"], md["performer"])) {
-            md.remove("artist");
-          }
-          // delete albumartist if the same as any other artisty thing
-          if (listEquals(md["albumartist"], md["performer"]) ||
-              listEquals(md["albumartist"], md["artist"]) ||
-              listEquals(md["albumartist"], md["composer"])) {
-            md.remove("albumartist");
-          }
-          // the addAll methods handle nulls and empty lists as no-ops, the clever logic is the deletion and renaming above
-          info.addAll(InfoType.composer, md["composer"]);
-          if (md.containsKey("performer")) {
-            // if performers exist then assume the artist is the composer
-            info.addAll(InfoType.composer, md["artist"]);
-          } else {
-            // otherwise assume it's a regular artist/performer
-            info.addAll(InfoType.performer, md["artist"]);
-          }
-          info.addAll(InfoType.performer, md["performer"]);
-          info.addAll(InfoType.performer, md["albumartist"]);
-          var trackDetails =
-              md.containsKey("track") ? " (#${md["track"]?.first ?? "?"})" : "";
-          info.addAll(InfoType.album, md["album"], trackDetails);
-          info.addAll(InfoType.station, md["name"]);
-          info.addAll(InfoType.genre, md["genre"]);
-          var queueData = <String>[];
-          if (info.duration > 0) {
-            queueData.add(info.durationToString());
-          }
-          if (info.song >= 0 && info.playlistlength > 0) {
-            if (info.consume) {
-              // in consume mode we only show the number of remaining tracks,
-              // and it doesn't matter whether we are in random mode or not
-              queueData.add("+${info.playlistlength - 1}");
-            } else if (!info.random) {
-              // otherwise only show playlist position when not random, since in
-              // random mode it doesn't make sense
-              queueData.add("${info.song + 1}/${info.playlistlength}");
-            }
-          }
-          if (queueData.isNotEmpty) {
-            info.subInfos.add(SubInfo(InfoType.queueinfo, queueData.join(" ")));
-          }
-          if (info.fileType != null && md.containsKey("audio")) {
-            info.add(InfoType.technical,
-                "${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
-          }
+          cleanMetaData(md);
+          copyMetaDataToInfo(md, info);
           if (kDebugMode) {
             print(
                 "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
           }
           infoController.add(info);
         }
-        info = Info(
-            connected:
-                true); // create a new info as we continue to process input
+        // reset info by creating a new one since we may process more input
+        info = Info(connected: true);
         md.clear();
         sectionLineCount = 0;
       } else if (ackPattern.hasMatch(line)) {
@@ -413,82 +360,20 @@ class MPDClient {
           print("processMPDOutput: error detected: $line");
         }
         error = true;
+      } else if (changedPattern.hasMatch(line)) {
+        ++sectionLineCount;
+        if (kDebugMode) {
+          print("processMPDOutput: change detected");
+        }
+        changed = true;
       } else {
+        // we have some real data output
         ++sectionLineCount;
         var match = dataPattern.firstMatch(line);
         if (match != null && match.groupCount == 2) {
           var key = (match.group(1) ?? "").toLowerCase();
           var value = match.group(2);
-          switch (key) {
-            case "changed":
-              if (kDebugMode) {
-                print("processMPDOutput: change detected");
-              }
-              changed = true;
-              break;
-            case "repeat":
-              info.repeat = value == "1";
-              break;
-            case "random":
-              info.random = value == "1";
-              break;
-            case "consume":
-              info.consume = value == "1";
-              break;
-            case "single":
-              info.single = value == "single";
-              break;
-            case "channel":
-              acceptMessage = value == "mpd-display";
-              break;
-            case "message":
-              if (acceptMessage) {
-                infoController.add(Info(isInfo: false, info: value));
-              }
-              break;
-            case "state":
-              switch (value) {
-                case "play":
-                  info.state = PlayState.playing;
-                  break;
-                case "pause":
-                  info.state = PlayState.paused;
-                  break;
-                default:
-                  info.state = PlayState.stopped;
-                  break;
-              }
-              break;
-            case "duration":
-              info.duration = double.parse(value ?? "0");
-              break;
-            case "elapsed":
-              info.elapsed = double.parse(value ?? "0");
-              break;
-            case "song":
-              info.song = int.parse(value ?? "-1");
-              break;
-            case "playlistlength":
-              info.playlistlength = int.parse(value ?? "0");
-              break;
-            case "title":
-              info.info = value ?? "?";
-              break;
-            case "file":
-              info.setFiletypeFromPath(value);
-              break;
-            case "album":
-            case "artist":
-            case "albumartist":
-            case "composer":
-            case "performer":
-            case "genre":
-            case "track":
-            case "name": // name of a radio station
-            case "audio": // audio file details
-              md.putIfAbsent(key, () => []).add(value ?? "?");
-              break;
-          }
+          updateInfoAndMetaData(info, md, key, value);
         }
       }
     }
@@ -511,12 +396,131 @@ class MPDClient {
     }
   }
 
+  void cleanMetaData(HashMap<String, List<String>> md) {
+    // check various metadata scenarios, but only if state isn't stopped
+    // for classical sometimes the artist tag contains the composer and
+    // sometimes the performer; let's handle those situations as sensibly as
+    // possible
+    // delete artist if the same as composer or performer
+    if (listEquals(md["artist"], md["composer"]) ||
+        listEquals(md["artist"], md["performer"])) {
+      md.remove("artist");
+    }
+    // delete albumartist if the same as any other artisty thing
+    if (listEquals(md["albumartist"], md["performer"]) ||
+        listEquals(md["albumartist"], md["artist"]) ||
+        listEquals(md["albumartist"], md["composer"])) {
+      md.remove("albumartist");
+    }
+  }
+
+  void updateInfoAndMetaData(
+      Info info, HashMap<String, List<String>> md, String key, String? value) {
+    switch (key) {
+      case "repeat":
+        info.repeat = value == "1";
+        break;
+      case "random":
+        info.random = value == "1";
+        break;
+      case "consume":
+        info.consume = value == "1";
+        break;
+      case "single":
+        info.single = value == "single";
+        break;
+      case "state":
+        switch (value) {
+          case "play":
+            info.state = PlayState.playing;
+            break;
+          case "pause":
+            info.state = PlayState.paused;
+            break;
+          default:
+            info.state = PlayState.stopped;
+            break;
+        }
+        break;
+      case "duration":
+        info.duration = double.parse(value ?? "0");
+        break;
+      case "elapsed":
+        info.elapsed = double.parse(value ?? "0");
+        break;
+      case "song":
+        info.song = int.parse(value ?? "-1");
+        break;
+      case "playlistlength":
+        info.playlistlength = int.parse(value ?? "0");
+        break;
+      case "title":
+        info.info = value ?? "?";
+        break;
+      case "file":
+        info.setFiletypeFromPath(value);
+        break;
+      case "album":
+      case "artist":
+      case "albumartist":
+      case "composer":
+      case "performer":
+      case "genre":
+      case "track":
+      case "name": // name of a radio station
+      case "audio": // audio file details
+        md.putIfAbsent(key, () => []).add(value ?? "?");
+        break;
+    }
+  }
+
+  void copyMetaDataToInfo(HashMap<String, List<String>> md, Info info) {
+    // the addAll methods handle nulls and empty lists as no-ops, the clever logic is the deletion and renaming above
+    info.addAll(InfoType.composer, md["composer"]);
+    if (md.containsKey("performer")) {
+      // if performers exist then assume the artist is the composer
+      info.addAll(InfoType.composer, md["artist"]);
+    } else {
+      // otherwise assume it's a regular artist/performer
+      info.addAll(InfoType.performer, md["artist"]);
+    }
+    info.addAll(InfoType.performer, md["performer"]);
+    info.addAll(InfoType.performer, md["albumartist"]);
+    var trackDetails =
+        md.containsKey("track") ? " (#${md["track"]?.first ?? "?"})" : "";
+    info.addAll(InfoType.album, md["album"], trackDetails);
+    info.addAll(InfoType.station, md["name"]);
+    info.addAll(InfoType.genre, md["genre"]);
+    var queueData = <String>[];
+    if (info.duration > 0) {
+      queueData.add(info.durationToString());
+    }
+    if (info.song >= 0 && info.playlistlength > 0) {
+      if (info.consume) {
+        // in consume mode we only show the number of remaining tracks,
+        // and it doesn't matter whether we are in random mode or not
+        queueData.add("+${info.playlistlength - 1}");
+      } else if (!info.random) {
+        // otherwise only show playlist position when not random, since in
+        // random mode it doesn't make sense
+        queueData.add("${info.song + 1}/${info.playlistlength}");
+      }
+    }
+    if (queueData.isNotEmpty) {
+      info.subInfos.add(SubInfo(InfoType.queueinfo, queueData.join(" ")));
+    }
+    if (info.fileType != null && md.containsKey("audio")) {
+      info.add(InfoType.technical,
+          "${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
+    }
+  }
+
   void goIdle() {
     if (kDebugMode) {
       print("goIdle");
     }
     sendCommand("idle player database playlist options message");
-    connstate = ConnState.readoutput;
+    connstate = ConnState.readResponse;
   }
 
   void getStatus({bool subscribe = false}) {
@@ -525,6 +529,6 @@ class MPDClient {
     }
     sendCommand(
         "command_list_begin\n${subscribe ? "subscribe mpd-display\n" : ""}status\ncurrentsong\nreadmessages\ncommand_list_end");
-    connstate = ConnState.readoutput;
+    connstate = ConnState.readResponse;
   }
 }
