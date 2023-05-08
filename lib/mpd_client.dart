@@ -18,12 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data_classes.dart';
