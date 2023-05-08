@@ -18,10 +18,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data_classes.dart';
@@ -32,10 +34,10 @@ typedef Lines = List<String>;
 typedef Response = HashMap<String, List<String>>;
 
 enum ConnState {
-  connecting, // we have just connected and we're waiting for a response
-  //idle, // we sent the idle command and are waiting for a response
-  readResponse, // we sent commands to fetch the state and are waiting for a response
-  command, // we sent a command (like play) and are waiting for a response
+  awaitConnection, // we have just connected and we're waiting for a response
+  awaitChange, // we sent the idle command and are waiting for a response
+  awaitStatus, // we sent commands to fetch the state and are waiting for a response
+  awaitCommandResult, // we sent a command (like play) and are waiting for a response
 }
 
 class MPDClient {
@@ -47,13 +49,16 @@ class MPDClient {
   String server = "";
   int port = 6600;
   Socket? socket;
-  ConnState connstate = ConnState.connecting;
+  ConnState connstate = ConnState.awaitConnection;
+  var commandQueue = List<String>.empty(growable: true);
   bool stayConnected = false; // whether to reconnect on failure/disconnect
   late StreamController<Info> infoController;
   final utf8 = const Utf8Codec(allowMalformed: true);
   Lines lineBuffer = [];
   bool partialLineRemaining =
       false; // did the last chunk of data received from MPD end without a newline?
+  String prevPartialLine = "";
+  var responseBuffer = Response();
 
   MPDClient() {
     infoController = StreamController<Info>(
@@ -108,14 +113,14 @@ class MPDClient {
         }
         retryInterval = minRetryInterval;
         sock.listen(
-          onData,
+          accumulateData,
           onDone: onDone,
           onError: onError,
           cancelOnError:
               true, // we want it to be safe to destroy the socket and re-connect after any error
         );
         socket = sock;
-        connstate = ConnState.connecting;
+        connstate = ConnState.awaitConnection;
       }).catchError((e) {
         if (kDebugMode) {
           print("connectSocket: caught error");
@@ -145,39 +150,77 @@ class MPDClient {
     }
   }
 
-  void onData(Uint8List data) {
+  // accept blocks of data from the socket, split to lines, accumulate key-value
+  // lines into a hashmap buffer and whenever we hit an OK, pass the buffer to
+  // be interpreted then discarded, or if ACK discard without action
+  void accumulateData(Uint8List data) {
+    final dataPattern = RegExp(r'^([^:]+): (.*)$');
+    final okPattern = RegExp(r'^OK');
+    final ackPattern = RegExp(r'^ACK');
     final dataStr = utf8.decode(data);
     final newIsPartial = !dataStr.endsWith('\n');
     final newLines = dataStr.trim().split("\n");
     if (kDebugMode) {
-      print("got ${newLines.length} new, partial $newIsPartial");
-    }
-    if (partialLineRemaining && lineBuffer.isNotEmpty) {
-      // the previous data was partial, so pop it off and prepend it to the new first line
-      newLines[0] = lineBuffer.removeLast() + newLines[0];
-      if (kDebugMode) {
-        print("previous was partial, adjusted to ${newLines[0]}");
+      if (dataStr.length < 60) {
+        print("dataStr = \"$dataStr\"");
+      }
+      if (newLines.length <= 2) {
+        print("got $newLines, partial $newIsPartial");
+      } else {
+        print("got ${newLines.length} new, partial $newIsPartial");
       }
     }
-    lineBuffer.addAll(newLines);
-    partialLineRemaining = newIsPartial;
-    // only process the line buffer if it is *not* partial *and* it ends with OK or ACK
-    if (!partialLineRemaining &&
-        (lineBuffer.last.startsWith("OK") ||
-            lineBuffer.last.startsWith("ACK"))) {
-      switch (connstate) {
-        case ConnState.connecting:
-          processConnecting(lineBuffer);
-          break;
-        case ConnState.command:
-        case ConnState.readResponse:
-          processMPDResponse(lineBuffer);
-          break;
-      }
-      lineBuffer.clear(); // we processed it, clear the buffer
-    } else {
-      if (kDebugMode) {
-        print("partial new data, not processing yet: $lineBuffer");
+    // append the previous partial line (might be empty) to the first new line
+    newLines[0] = prevPartialLine + newLines[0];
+    // if the last line was partial, pop it off and save it
+    prevPartialLine = newIsPartial ? newLines.removeLast() : "";
+    if (kDebugMode) {
+      print("accumulateData: prevPartialLine = \"$prevPartialLine\"");
+    }
+    // accumulate the new lines into the response buffer
+    for (final line in newLines) {
+      if (okPattern.hasMatch(line)) {
+        // we have a complete response, process it
+        if (kDebugMode) {
+          print("accumulateData: OK found: \"$line\"");
+        }
+        switch (connstate) {
+          case ConnState.awaitConnection:
+            processConnecting(line);
+            break;
+          case ConnState.awaitChange:
+            processChanged(responseBuffer);
+            break;
+          case ConnState.awaitCommandResult:
+            processCommand();
+            break;
+          case ConnState.awaitStatus:
+            processStatusResponse(responseBuffer);
+            break;
+        }
+        responseBuffer.clear();
+        // we don't initiate any other action here because it's assumed one of the above functions did that
+      } else if (ackPattern.hasMatch(line)) {
+        // error so we can't use the previous output; basically do nothing at the moment
+        if (kDebugMode) {
+          //print("accumulateData: error found: \"$line\"");
+        }
+        responseBuffer.clear();
+        idleAwaitChanges();
+      } else {
+        // must be a data line, add it to the response buffer hashmap
+        if (kDebugMode) {
+          //print("accumulateData: regular line found: \"$line\"");
+        }
+        var match = dataPattern.firstMatch(line);
+        if (match != null && match.groupCount == 2) {
+          var key = (match.group(1) ?? "").toLowerCase();
+          var value = match.group(2);
+          if (kDebugMode) {
+            //print("accumulateData: key \"$key\" value \"$value\"");
+          }
+          responseBuffer.putIfAbsent(key, () => []).add(value ?? "?");
+        }
       }
     }
   }
@@ -261,237 +304,194 @@ class MPDClient {
     }
   }
 
-  void sendCommand(String message) {
-    if (kDebugMode) {
-      print("sendCommand");
-    }
+  void sendCommand(String command,
+      [ConnState newState = ConnState.awaitCommandResult]) {
     if (socket != null) {
       if (kDebugMode) {
-        print("send command: $message");
+        print("sendCommand: $command new state $newState");
       }
-      socket!.write("noidle\n$message\n");
-      connstate = ConnState.command;
+      if (connstate == ConnState.awaitChange) {
+        // we're waiting for an idle command so queue the requested command then undo the idle
+        if (kDebugMode) {
+          print("sendCommand: queuing command \"$command\" and sending noidle");
+        }
+        commandQueue.add(command);
+        socket!.write("noidle\n");
+        connstate = ConnState.awaitCommandResult;
+      } else {
+        socket!.write("$command\n");
+        connstate = newState;
+      }
     }
   }
 
-  void processConnecting(Lines lines) {
+  void processConnecting(String resultLine) {
     if (kDebugMode) {
       print("processConnecting");
     }
     final mpdVersionPattern = RegExp(r'^OK MPD [.0-9]+$');
-    if (lines.isNotEmpty && mpdVersionPattern.hasMatch(lines[0])) {
+    if (mpdVersionPattern.hasMatch(resultLine)) {
       if (kDebugMode) {
         print("processConnecting: getstatus");
-      }
-      getStatus(subscribe: true);
-    } else {
-      if (kDebugMode) {
-        print("processConnecting: not an MPD server: $lines");
-      }
-      notifyDisconnected("Not an MPD player");
-    }
-  }
-
-  void processCommand(Lines lines) {
-    if (kDebugMode) {
-      print("processCommand");
-    }
-    if (lines.length == 1 && lines.first == "OK") {
-      if (kDebugMode) {
-        print("processCommand: OK");
-      }
-      goIdle();
-    } else {
-      if (kDebugMode) {
-        print("processCommand: not OK");
-      }
-      // in future perhaps perform some UI action to indicate a failure but for now just suck it up
-      goIdle();
-    }
-  }
-
-  void processMPDResponse(Lines lines) {
-    if (kDebugMode) {
-      print("processMPDOutput");
-    }
-    var error = false;
-    var changed = false;
-    var info = Info(connected: true); // info to be sent to the UI
-    var md =
-        Response(); // temporary storage of interesting metadata before processing
-    final dataPattern = RegExp(r'^([^:]+): (.*)$');
-    final okPattern = RegExp(r'^OK');
-    final ackPattern = RegExp(r'^ACK');
-    final changedPattern = RegExp(r'^changed:');
-    var sectionLineCount = 0;
-    if (kDebugMode) {
-      print("processMPDOutput: reading lines in state: $connstate");
-    }
-    for (var line in lines) {
-      if (error) {
-        if (kDebugMode) {
-          print("processMPDOutput: skipping because of error");
-        }
-        break; // ignore the rest of the lines
-      }
-      if (okPattern.hasMatch(line)) {
-        if (kDebugMode) {
-          print("processMPDOutput: OK detected");
-        }
-        // we found an "OK", signalling the end of a section of the response
-        // if we processed more than one line on this pass, assume it was status output and process it
-        if (sectionLineCount > 1) {
-          if (kDebugMode) {
-            print("processMPDOutput: processing metadata");
-          }
-          cleanMetaData(md);
-          copyMetaDataToInfo(md, info);
-          if (kDebugMode) {
-            print(
-                "processMPDOutput: sending ${info.info} sic ${info.subInfos.length}");
-          }
-          infoController.add(info);
-        }
-        // reset info by creating a new one since we may process more input
-        info = Info(connected: true);
-        md.clear();
-        sectionLineCount = 0;
-      } else if (ackPattern.hasMatch(line)) {
-        if (kDebugMode) {
-          print("processMPDOutput: error detected: $line");
-        }
-        error = true;
-      } else if (changedPattern.hasMatch(line)) {
-        ++sectionLineCount;
-        if (kDebugMode) {
-          print("processMPDOutput: change detected");
-        }
-        changed = true;
-      } else {
-        // we have some real data output
-        ++sectionLineCount;
-        var match = dataPattern.firstMatch(line);
-        if (match != null && match.groupCount == 2) {
-          var key = (match.group(1) ?? "").toLowerCase();
-          var value = match.group(2);
-          updateInfoAndMetaData(info, md, key, value);
-        }
-      }
-    }
-    if (error) {
-      if (kDebugMode) {
-        print("processMPDOutput: found error");
-      }
-      // in future perhaps perform some UI action to indicate a failure but for now just suck it up
-      goIdle();
-    } else if (changed) {
-      if (kDebugMode) {
-        print("processMPDOutput: changed, trying get status");
       }
       getStatus();
     } else {
       if (kDebugMode) {
-        print("processMPDOutput: go idle");
+        print("processConnecting: not an MPD server: $resultLine");
       }
-      goIdle();
+      notifyDisconnected("Not an MPD server");
     }
   }
 
-  void cleanMetaData(Response md) {
-    // check various metadata scenarios, but only if state isn't stopped
+  void processCommand() {
+    if (kDebugMode) {
+      print("processCommand");
+    }
+    // in future perhaps perform some UI action to indicate a failure but for now just suck it up
+    if (commandQueue.isNotEmpty) {
+      // usually because we tried to send a command while awaiting a change from
+      // idle, so send that command and remain in the same state
+      if (kDebugMode) {
+        print("processCommand: sending pending command");
+      }
+      sendCommand(commandQueue.removeLast(), ConnState.awaitCommandResult);
+    } else {
+      // no pending commands, await further changes
+      idleAwaitChanges();
+    }
+  }
+
+  // MPD notified us that something changed
+  void processChanged(Response response) {
+    // we don't actually care what changed at the moment, we just update everything
+    if (kDebugMode) {
+      print("processChanged: \"$response\"");
+    }
+    // we're never going to have any commands to queue in this state and we must
+    // ensure that when we finally hit sendCommand() we're not still in the
+    // awaitChange state; as ugly as this is, it's a relatively simple hack
+    // compared to the alternatives
+    connstate = ConnState.awaitCommandResult;
+    getStatus();
+  }
+
+  // accepts a key and an anonymous function; if the key exists in the current
+  // response and there is at least one value, pass the first value to the
+  // function, otherwise do not call
+  void consumeKey(String key, void Function(String?) action) {
+    if (responseBuffer.containsKey(key)) {
+      if (kDebugMode) {
+        print("consumeKey: calling function for key \"$key\"");
+      }
+      try {
+        action(responseBuffer[key]!.first);
+      } on StateError {
+        action(null);
+      }
+      responseBuffer.remove(key);
+    } else {
+      if (kDebugMode) {
+        print("consumeKey: no value for key \"$key\"");
+      }
+    }
+  }
+
+  void processStatusResponse(Response response) {
+    var info = Info(connected: true); // info to be sent to the UI
+    if (kDebugMode) {
+      print("processStatusResponse: reading lines in state: $connstate");
+    }
+    consumeKey("repeat", (v) {
+      info.repeat = v == "1";
+    });
+    consumeKey("random", (v) {
+      info.random = v == "1";
+    });
+    consumeKey("consume", (v) {
+      info.consume = v == "1";
+    });
+    consumeKey("single", (v) {
+      info.single = v == "1";
+    });
+    consumeKey("state", (v) {
+      switch (v) {
+        case "play":
+          info.state = PlayState.playing;
+          break;
+        case "pause":
+          info.state = PlayState.paused;
+          break;
+        default:
+          info.state = PlayState.stopped;
+          break;
+      }
+    });
+    if (info.state != PlayState.stopped) {
+      // we only care about this stuff if playing or paused
+      consumeKey("duration", (v) {
+        info.duration = double.parse(v ?? "0");
+      });
+      consumeKey("elapsed", (v) {
+        info.elapsed = double.parse(v ?? "0");
+      });
+      consumeKey("song", (v) {
+        info.song = int.parse(v ?? "-1");
+      });
+      consumeKey("playlistlength", (v) {
+        info.playlistlength = int.parse(v ?? "0");
+      });
+      consumeKey("title", (v) {
+        info.info = v ?? "?";
+      });
+      consumeKey("file", (v) {
+        info.setFiletypeFromPath(v ?? "");
+      });
+      cleanResponse(response);
+      copyResponseToInfo(response, info);
+    }
+    if (kDebugMode) {
+      print("processStatusResponse: sending to info: $info");
+    }
+    infoController.add(info);
+    idleAwaitChanges();
+  }
+
+  void cleanResponse(Response response) {
+    // check various metadata scenarios and clean up the response
     // for classical sometimes the artist tag contains the composer and
     // sometimes the performer; let's handle those situations as sensibly as
     // possible
     // delete artist if the same as composer or performer
-    if (listEquals(md["artist"], md["composer"]) ||
-        listEquals(md["artist"], md["performer"])) {
-      md.remove("artist");
+    if (listEquals(response["artist"], response["composer"]) ||
+        listEquals(response["artist"], response["performer"])) {
+      response.remove("artist");
     }
     // delete albumartist if the same as any other artisty thing
-    if (listEquals(md["albumartist"], md["performer"]) ||
-        listEquals(md["albumartist"], md["artist"]) ||
-        listEquals(md["albumartist"], md["composer"])) {
-      md.remove("albumartist");
+    if (listEquals(response["albumartist"], response["performer"]) ||
+        listEquals(response["albumartist"], response["artist"]) ||
+        listEquals(response["albumartist"], response["composer"])) {
+      response.remove("albumartist");
     }
   }
 
-  void updateInfoAndMetaData(
-      Info info, Response md, String key, String? value) {
-    switch (key) {
-      case "repeat":
-        info.repeat = value == "1";
-        break;
-      case "random":
-        info.random = value == "1";
-        break;
-      case "consume":
-        info.consume = value == "1";
-        break;
-      case "single":
-        info.single = value == "single";
-        break;
-      case "state":
-        switch (value) {
-          case "play":
-            info.state = PlayState.playing;
-            break;
-          case "pause":
-            info.state = PlayState.paused;
-            break;
-          default:
-            info.state = PlayState.stopped;
-            break;
-        }
-        break;
-      case "duration":
-        info.duration = double.parse(value ?? "0");
-        break;
-      case "elapsed":
-        info.elapsed = double.parse(value ?? "0");
-        break;
-      case "song":
-        info.song = int.parse(value ?? "-1");
-        break;
-      case "playlistlength":
-        info.playlistlength = int.parse(value ?? "0");
-        break;
-      case "title":
-        info.info = value ?? "?";
-        break;
-      case "file":
-        info.setFiletypeFromPath(value);
-        break;
-      case "album":
-      case "artist":
-      case "albumartist":
-      case "composer":
-      case "performer":
-      case "genre":
-      case "track":
-      case "name": // name of a radio station
-      case "audio": // audio file details
-        md.putIfAbsent(key, () => []).add(value ?? "?");
-        break;
-    }
-  }
-
-  void copyMetaDataToInfo(Response md, Info info) {
+  void copyResponseToInfo(Response response, Info info) {
     // the addAll methods handle nulls and empty lists as no-ops, the clever logic is the deletion and renaming above
-    info.addAll(InfoType.composer, md["composer"]);
-    if (md.containsKey("performer")) {
+    info.addAll(InfoType.composer, response["composer"]);
+    if (response.containsKey("performer")) {
       // if performers exist then assume the artist is the composer
-      info.addAll(InfoType.composer, md["artist"]);
+      info.addAll(InfoType.composer, response["artist"]);
     } else {
       // otherwise assume it's a regular artist/performer
-      info.addAll(InfoType.performer, md["artist"]);
+      info.addAll(InfoType.performer, response["artist"]);
     }
-    info.addAll(InfoType.performer, md["performer"]);
-    info.addAll(InfoType.performer, md["albumartist"]);
-    var trackDetails =
-        md.containsKey("track") ? " (#${md["track"]?.first ?? "?"})" : "";
-    info.addAll(InfoType.album, md["album"], trackDetails);
-    info.addAll(InfoType.station, md["name"]);
-    info.addAll(InfoType.genre, md["genre"]);
+    info.addAll(InfoType.performer, response["performer"]);
+    info.addAll(InfoType.performer, response["albumartist"]);
+    var trackDetails = response.containsKey("track")
+        ? " (#${response["track"]?.first ?? "?"})"
+        : "";
+    info.addAll(InfoType.album, response["album"], trackDetails);
+    info.addAll(InfoType.station, response["name"]);
+    info.addAll(InfoType.genre, response["genre"]);
     var queueData = <String>[];
     if (info.duration > 0) {
       queueData.add(info.durationToString());
@@ -510,26 +510,26 @@ class MPDClient {
     if (queueData.isNotEmpty) {
       info.subInfos.add(SubInfo(InfoType.queueinfo, queueData.join(" ")));
     }
-    if (info.fileType != null && md.containsKey("audio")) {
+    if (info.fileType != null && response.containsKey("audio")) {
       info.add(InfoType.technical,
-          "${info.fileType!}:${(md["audio"]?.join("") ?? "")}");
+          "${info.fileType!}:${(response["audio"]?.join("") ?? "")}");
     }
   }
 
-  void goIdle() {
+  void idleAwaitChanges() {
     if (kDebugMode) {
-      print("goIdle");
+      print("idleAwaitChanges");
     }
-    sendCommand("idle player database playlist options message");
-    connstate = ConnState.readResponse;
+    sendCommand(
+        "idle player database playlist options message", ConnState.awaitChange);
   }
 
-  void getStatus({bool subscribe = false}) {
+  void getStatus() {
     if (kDebugMode) {
       print("getStatus");
     }
-    sendCommand(
-        "command_list_begin\n${subscribe ? "subscribe mpd-display\n" : ""}status\ncurrentsong\nreadmessages\ncommand_list_end");
-    connstate = ConnState.readResponse;
+    const commands =
+        "command_list_begin\nstatus\ncurrentsong\nreadmessages\ncommand_list_end";
+    sendCommand(commands, ConnState.awaitStatus);
   }
 }
