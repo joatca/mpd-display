@@ -510,8 +510,31 @@ class MPDClient {
     }
     if (info.fileType != null && response.containsKey("audio")) {
       info.add(InfoType.technical,
-          "${info.fileType!}:${(response["audio"]?.join("") ?? "")}");
+          readableAudioFormat(info.fileType, response["audio"]!.first));
     }
+  }
+
+  String readableAudioFormat(String? fileType, String format) {
+    final pcmFormat = RegExp(r'^(\d+):(\d+):(\d)$');
+    final dsdFormat = RegExp(r'^dsd(\d+):(\d)$');
+    var rv = "";
+
+    final pcmMatch = pcmFormat.firstMatch(format);
+    if (pcmMatch != null) {
+      final sampleRate = double.parse(pcmMatch.group(1) ?? "0") / 1000.0;
+      rv += "${pcmMatch.group(2)}/${sampleRate}";
+      if (fileType != null) {
+        rv += " ${fileType.toUpperCase()}";
+      }
+    } else {
+      final dsdMatch = dsdFormat.firstMatch(format);
+      if (dsdMatch != null) {
+        rv += (dsdMatch.group(1) ?? "").toUpperCase();
+      } else {
+        rv += "$format ${(fileType ?? "").toUpperCase()}";
+      }
+    }
+    return rv;
   }
 
   void idleAwaitChanges() {
