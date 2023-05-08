@@ -136,7 +136,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           return emptyLayout(context, constraints,
               Icons.cloud_off, _state.info.info);
         } else if (_state.info.isEmpty()) {
-          return emptyLayout(context, constraints, Icons.cloud_done);
+          return emptyLayout(context, constraints, Icons.stop);
         } else {
           return playingLayout(context, constraints, _state.info);
         }
@@ -198,7 +198,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             size: textStyle?.fontSize,
             color: textStyle?.color,
           ),
-          Text(msg ?? "${widget.mpd.server}:${widget.mpd.port}",
+          Text(msg ?? "${widget.mpd.server}${widget.mpd.port == 6600 ? "" : ":${widget.mpd.port}"}",
               style: textStyle),
         ],
       ),
