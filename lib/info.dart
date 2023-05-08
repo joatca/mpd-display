@@ -134,9 +134,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       body: LayoutBuilder(builder: (context, constraints) {
         if (!_state.info.connected) {
           return emptyLayout(context, constraints,
-              Icons.signal_wifi_connected_no_internet_4, _state.info.info);
+              Icons.cloud_off, _state.info.info);
         } else if (_state.info.isEmpty()) {
-          return emptyLayout(context, constraints, Icons.queue_music);
+          return emptyLayout(context, constraints, Icons.cloud_done);
         } else {
           return playingLayout(context, constraints, _state.info);
         }
