@@ -311,9 +311,9 @@ class Info {
     subInfos.add(SubInfo(type, val));
   }
 
-  void addAll(InfoType type, List<String>? vals, [String suffix = ""]) {
+  void addAll(InfoType type, List<String>? vals, [String? prefix]) {
     for (final val in vals ?? []) {
-      subInfos.add(SubInfo(type, "$val$suffix"));
+      subInfos.add(SubInfo(type, prefix == null ? val : "$prefix / $val"));
     }
   }
 

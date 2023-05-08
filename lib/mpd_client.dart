@@ -485,8 +485,8 @@ class MPDClient {
     info.addAll(InfoType.performer, response["performer"]);
     info.addAll(InfoType.performer, response["albumartist"]);
     var trackDetails = response.containsKey("track")
-        ? " (#${response["track"]?.first ?? "?"})"
-        : "";
+        ? (response["track"]?.first ?? "?")
+        : null;
     info.addAll(InfoType.album, response["album"], trackDetails);
     info.addAll(InfoType.station, response["name"]);
     info.addAll(InfoType.genre, response["genre"]);
@@ -524,7 +524,7 @@ class MPDClient {
       final sampleRate = double.parse(pcmMatch.group(1) ?? "0") / 1000.0;
       rv += "${pcmMatch.group(2)}/${sampleRate}";
       if (fileType != null) {
-        rv += " ${fileType.toUpperCase()}";
+        rv = "${fileType.toUpperCase()} $rv";
       }
     } else {
       final dsdMatch = dsdFormat.firstMatch(format);
