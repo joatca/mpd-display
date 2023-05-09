@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
@@ -104,7 +105,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   void okGo() {
     infoStream = widget.mpd.infoStream();
     startListening();
-    ticker = Timer.periodic(const Duration(seconds: 1), tickScroll);
+    ticker ??= Timer.periodic(const Duration(seconds: 1), tickScroll);
   }
 
   void stopThat() {
@@ -226,7 +227,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       // us a short pause on the final line; the scroll thus resets to the top
       // whenever anything changes
       final wantedScroll = min(
-          (_state.currentTime - _state.info.timestamp).toInt().remainder(_state.scrollPoints.length + 3),
+          (_state.currentTime - _state.info.timestamp).toInt().remainder(_state.scrollPoints.length).remainder(_state.scrollPoints.length + 3),
           _state.scrollPoints.length - 1);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
