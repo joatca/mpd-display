@@ -208,7 +208,6 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   void tickScroll(Timer timer) async {
     if (_state.sliderUpdateEnabled && _state.info.state == PlayState.playing) {
       setState(() {
-        // always update the current time, we use it whether paused or playing
         _state.currentTime =
             DateTime.now().millisecondsSinceEpoch.toDouble() / 1000;
         // compute the actual elapsed time based on the elapsed value in the info
@@ -222,13 +221,12 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       });
     }
     if (_state.scrollPoints.isNotEmpty) {
-      // converting elapsed time directly to seconds gives us one word per
-      // second; the extra 2 and constraining min() gives us a short pause on
-      // the final line
+      // converting time between last info update and now directly to seconds
+      // gives us one word per second; the extra 3 and constraining min() gives
+      // us a short pause on the final line; the scroll thus resets to the top
+      // whenever anything changes
       final wantedScroll = min(
-          _state.estimatedElapsed
-              .toInt()
-              .remainder(_state.scrollPoints.length + 2),
+          (_state.currentTime - _state.info.timestamp).toInt().remainder(_state.scrollPoints.length + 3),
           _state.scrollPoints.length - 1);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
