@@ -48,7 +48,7 @@ class MPDClient {
   int port = 6600;
   Socket? socket;
   ConnState connstate = ConnState.awaitConnection;
-  String? queuedCommand = null;
+  String? queuedCommand;
   ConnState queuedState =
       ConnState.awaitChange; // gotta pick something, doesn't matter
   bool stayConnected = false; // whether to reconnect on failure/disconnect
@@ -121,6 +121,11 @@ class MPDClient {
         );
         socket = sock;
         connstate = ConnState.awaitConnection;
+        // if we disconnect then reconnect while in awaitChange state then the
+        // first attempt to send a command will actually first try to send
+        // noidle and then the queued command, but since we aren't in wait state
+        // noidle will return nothing, not even an OK, so we must remove any queued command
+        queuedCommand = null;
       }).catchError((e) {
         if (kDebugMode) {
           print("connectSocket: caught error");
