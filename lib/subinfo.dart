@@ -103,9 +103,9 @@ class SubInfoRow extends StatelessWidget {
       case InfoType.album:
         return Icons.album_outlined;
       case InfoType.composer:
-        return Icons.edit;
+        return Icons.history_edu;
       case InfoType.performer:
-        return Icons.piano;
+        return Icons.person_sharp;
       case InfoType.station:
         return Icons.radio;
       case InfoType.queueinfo:
