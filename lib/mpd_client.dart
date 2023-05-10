@@ -48,7 +48,9 @@ class MPDClient {
   int port = 6600;
   Socket? socket;
   ConnState connstate = ConnState.awaitConnection;
-  var commandQueue = List<String>.empty(growable: true);
+  String? queuedCommand = null;
+  ConnState queuedState =
+      ConnState.awaitChange; // gotta pick something, doesn't matter
   bool stayConnected = false; // whether to reconnect on failure/disconnect
   late StreamController<Info> infoController;
   final utf8 = const Utf8Codec(allowMalformed: true);
@@ -313,7 +315,8 @@ class MPDClient {
         if (kDebugMode) {
           print("sendCommand: queuing command \"$command\" and sending noidle");
         }
-        commandQueue.add(command);
+        queuedCommand = command;
+        queuedState = newState;
         socket!.write("noidle\n");
         connstate = ConnState.awaitCommandResult;
       } else {
@@ -346,13 +349,15 @@ class MPDClient {
       print("processCommand");
     }
     // in future perhaps perform some UI action to indicate a failure but for now just suck it up
-    if (commandQueue.isNotEmpty) {
+    final queued = queuedCommand;
+    queuedCommand = null;
+    if (queued != null) {
       // usually because we tried to send a command while awaiting a change from
       // idle, so send that command and remain in the same state
       if (kDebugMode) {
         print("processCommand: sending pending command");
       }
-      sendCommand(commandQueue.removeLast(), ConnState.awaitCommandResult);
+      sendCommand(queued, queuedState);
     } else {
       // no pending commands, await further changes
       idleAwaitChanges();
