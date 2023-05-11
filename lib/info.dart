@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wakelock/wakelock.dart';
 import 'data_classes.dart';
@@ -78,6 +79,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   @override
   void initState() {
+    if (kDebugMode) {
+      print("initState");
+    }
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     okGo();
@@ -85,6 +89,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    if (kDebugMode) {
+      print("dispose");
+    }
     stopThat();
     WidgetsBinding.instance.removeObserver(this);
     subscription?.cancel();
@@ -94,20 +101,32 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
+      if (kDebugMode) {
+        print("lifecycle paused");
+      }
       stopThat();
     }
     if (state == AppLifecycleState.resumed) {
+      if (kDebugMode) {
+        print("lifecycle resumed");
+      }
       okGo();
     }
   }
 
   void okGo() {
+    if (kDebugMode) {
+      print("okGo");
+    }
     infoStream = widget.mpd.infoStream();
     startListening();
     ticker ??= Timer.periodic(const Duration(seconds: 1), tickScroll);
   }
 
   void stopThat() {
+    if (kDebugMode) {
+      print("stopThat");
+    }
     ticker?.cancel();
     ticker = null;
     stopListening();
@@ -133,8 +152,8 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           }),
       body: LayoutBuilder(builder: (context, constraints) {
         if (!_state.info.connected) {
-          return emptyLayout(context, constraints,
-              Icons.cloud_off, _state.info.info);
+          return emptyLayout(
+              context, constraints, Icons.cloud_off, _state.info.info);
         } else if (_state.info.isEmpty()) {
           return emptyLayout(context, constraints, Icons.stop);
         } else {
@@ -198,7 +217,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
             size: textStyle?.fontSize,
             color: textStyle?.color,
           ),
-          Text(msg ?? "${widget.mpd.server}${widget.mpd.port == 6600 ? "" : ":${widget.mpd.port}"}",
+          Text(
+              msg ??
+                  "${widget.mpd.server}${widget.mpd.port == 6600 ? "" : ":${widget.mpd.port}"}",
               style: textStyle),
         ],
       ),
@@ -226,7 +247,9 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       // us a short pause on the final line; the scroll thus resets to the top
       // whenever anything changes
       final wantedScroll = min(
-          max(0, (_state.currentTime - _state.info.timestamp)).toInt().remainder(_state.scrollPoints.length + 3),
+          max(0, (_state.currentTime - _state.info.timestamp))
+              .toInt()
+              .remainder(_state.scrollPoints.length + 3),
           _state.scrollPoints.length - 1);
       if (wantedScroll != currentScroll) {
         currentScroll = wantedScroll;
@@ -252,7 +275,13 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
   }
 
   void startListening() async {
+    if (kDebugMode) {
+      print("startListening");
+    }
     if (subscription == null) {
+      if (kDebugMode) {
+        print("startListening subscription was null");
+      }
       subscription = infoStream.listen((info) {
         if (info.isInfo) {
           setState(() {
@@ -269,31 +298,51 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
           if (info.state != PlayState.stopped && info.subInfos.isNotEmpty) {
             scrollTo(0);
           }
-        } else { // this is a text message to be interpreted by the app (setting theme)
+        } else {
+          // this is a text message to be interpreted by the app (setting theme)
           final msg = info.info;
           if (msg != null) {
             final words = msg.split("=").toList();
             if (words.length == 2) {
-              switch(words[0]) {
+              switch (words[0]) {
                 case "f":
-                widget.pageState.setFontThemeName(words[1]);
-                break;
+                  widget.pageState.setFontThemeName(words[1]);
+                  break;
                 case "a":
-                widget.pageState.setAppearanceThemeName(words[1]);
-                break;
+                  widget.pageState.setAppearanceThemeName(words[1]);
+                  break;
               }
             }
           }
         }
       });
     } else {
+      if (kDebugMode) {
+        print(
+            "subscription not null $subscription isPaused ${subscription?.isPaused}");
+      }
       if (subscription?.isPaused ?? false) {
+        if (kDebugMode) {
+          print("resuming paused subscription");
+        }
         subscription?.resume();
       }
     }
   }
 
   void stopListening() {
-    subscription?.pause();
+    if (kDebugMode) {
+      print("stopListening");
+    }
+    if (subscription?.isPaused ?? true) {
+      if (kDebugMode) {
+        print("subscription already paused");
+      }
+    } else {
+      if (kDebugMode) {
+        print("subscription paused");
+      }
+      subscription?.pause();
+    }
   }
 }
