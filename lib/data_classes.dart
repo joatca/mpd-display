@@ -168,12 +168,31 @@ class PageState extends ChangeNotifier {
       height: 1.20,
       weight: FontWeight.w600,
     ),
-    "Baroque": InfoFontTheme(
+    "Renaissance": InfoFontTheme(
       font: "Garamond",
       titleSize: 84,
       infoSize: 68,
       height: 1.1,
       weight: FontWeight.w600,
+    ),
+    "Baroque": InfoFontTheme(
+      font: "Baskerville",
+      titleSize: 76,
+      infoSize: 60,
+      height: 1.1,
+      weight: FontWeight.w600,
+    ),
+    "Headline": InfoFontTheme(
+      font: "DMSerif",
+      titleSize: 80,
+      infoSize: 64,
+      height: 1.1,
+    ),
+    "70s": InfoFontTheme(
+      font: "Righteous",
+      titleSize: 80,
+      infoSize: 64,
+      height: 1.1,
     ),
     "Techno": InfoFontTheme(
       font: "Jura",

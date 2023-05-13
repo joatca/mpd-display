@@ -47,7 +47,7 @@ class _AboutPageState extends State<AboutPage> with TextUtil {
   static const ppUrl = 'https://apps.joat.me/page/privacy';
   static const copyYear = '2023';
   static const copyright = 'Fraser McCrossan';
-  static const fontCopy = '"Standard" themes use the font Roboto, "Formal" themes use Noto Serif, "Baroque" themes use EB Garamond, and "Techno" themes use Jura, all from Google Fonts. "Matrix" themes use LED Counter 7 Italic, by Alexander Sizenko.';
+  static const fontCopy = '"Standard" uses the Roboto font, "Formal" uses Noto Serif, "Renaissance" uses EB Garamond, "Baroque" uses Libre Baskerville, "Headline" uses DMSerifDisplay, "70s" uses Righteous, and "Techno" uses Jura, all from Google Fonts. "Matrix" themes use LED Counter 7 Italic, by Alexander Sizenko.';
   static const license =
       'This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.';
   String _version = '';

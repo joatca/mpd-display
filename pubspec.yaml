@@ -79,6 +79,15 @@ flutter:
     - family: Garamond
       fonts:
         - asset: fonts/EBGaramond.ttf
+    - family: Baskerville
+      fonts:
+        - asset: fonts/LibreBaskerville-Regular.ttf
+    - family: DMSerif
+      fonts:
+        - asset: fonts/DMSerifDisplay-Regular.ttf
+    - family: Righteous
+      fonts:
+        - asset: fonts/Righteous-Regular.ttf
     - family: Jura
       fonts:
         - asset: fonts/Jura-SemiBold.ttf
