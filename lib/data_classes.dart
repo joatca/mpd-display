@@ -184,8 +184,8 @@ class PageState extends ChangeNotifier {
     ),
     "Headline": InfoFontTheme(
       font: "DMSerif",
-      titleSize: 80,
-      infoSize: 64,
+      titleSize: 84,
+      infoSize: 70,
       height: 1.1,
     ),
     "70s": InfoFontTheme(
