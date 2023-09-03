@@ -295,13 +295,23 @@ class SubInfo {
     }
     wordKeys.last.trimRight();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return (other is SubInfo && type == other.type && text == other.text);
+  }
+
+  @override
+  int get hashCode {
+    return type.hashCode ^ text.hashCode;
+  }
 }
 
 class Info {
   static final timeFormat = NumberFormat("00");
   bool isInfo; // if true, actual info, if false, special message
   String? info; // the current track title or perhaps a status message
-  List<SubInfo> subInfos = [];
+  Set<SubInfo> subInfos = {};
   PlayState state = PlayState.stopped;
   bool connected = false;
   bool repeat = false;
@@ -332,27 +342,10 @@ class Info {
     subInfos.add(SubInfo(type, val));
   }
 
-  void addAll(InfoType type, List<String>? vals, [String? prefix]) {
+  void addAll(InfoType type, List<String>? vals) {
     for (final val in vals ?? []) {
-      subInfos.add(SubInfo(type, prefix == null ? val : "$prefix / $val"));
+      subInfos.add(SubInfo(type, val));
     }
-  }
-
-  // remove second and subsequent infos
-  void deDupSubInfo() {
-    var counts = HashMap<String, int>();
-    for (var subInfo in subInfos) {
-      counts[subInfo.text] = (counts[subInfo.text] ?? 0) + 1;
-    }
-    subInfos.removeWhere((subInfo) {
-      var found = (counts[subInfo.text] ?? 0) > 1;
-      if (found) {
-        counts[subInfo.text] = (counts[subInfo.text] ?? 1) - 1;
-        return true;
-      } else {
-        return false;
-      }
-    });
   }
 
   String durationToString() =>

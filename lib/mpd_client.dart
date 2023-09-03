@@ -497,7 +497,7 @@ class MPDClient {
     var trackDetails = response.containsKey("track")
         ? (response["track"]?.first ?? "?")
         : null;
-    info.addAll(InfoType.album, response["album"], trackDetails);
+    info.addAll(InfoType.album, response["album"]);
     info.addAll(InfoType.station, response["name"]);
     info.addAll(InfoType.genre, response["genre"]);
     var queueData = <String>[];
@@ -522,7 +522,6 @@ class MPDClient {
       info.add(InfoType.technical,
           readableAudioFormat(info.fileType, response["audio"]!.first));
     }
-    info.deDupSubInfo();
   }
 
   String readableAudioFormat(String? fileType, String format) {

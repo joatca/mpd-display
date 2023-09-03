@@ -31,7 +31,7 @@ class SubInfoList extends StatelessWidget {
   }) : super(key: key);
 
   final BuildContext context;
-  final List<SubInfo> subInfos;
+  final Set<SubInfo> subInfos;
   final BoxConstraints box;
   final double paddingBase;
 
