@@ -522,6 +522,7 @@ class MPDClient {
       info.add(InfoType.technical,
           readableAudioFormat(info.fileType, response["audio"]!.first));
     }
+    info.deDupSubInfo();
   }
 
   String readableAudioFormat(String? fileType, String format) {

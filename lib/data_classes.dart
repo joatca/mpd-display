@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -334,6 +336,23 @@ class Info {
     for (final val in vals ?? []) {
       subInfos.add(SubInfo(type, prefix == null ? val : "$prefix / $val"));
     }
+  }
+
+  // remove second and subsequent infos
+  void deDupSubInfo() {
+    var counts = HashMap<String, int>();
+    for (var subInfo in subInfos) {
+      counts[subInfo.text] = (counts[subInfo.text] ?? 0) + 1;
+    }
+    subInfos.removeWhere((subInfo) {
+      var found = (counts[subInfo.text] ?? 0) > 1;
+      if (found) {
+        counts[subInfo.text] = (counts[subInfo.text] ?? 1) - 1;
+        return true;
+      } else {
+        return false;
+      }
+    });
   }
 
   String durationToString() =>
