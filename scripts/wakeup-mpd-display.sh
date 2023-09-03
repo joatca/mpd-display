@@ -15,6 +15,7 @@ while true; do
     echo Playback started
     adb shell am start me.joat.mpd_display/.MainActivity
     adb shell input keyevent KEYCODE_WAKEUP
+    sleep 1
     adb shell input swipe $SWIPE_FROM $SWIPE_TO
     if [ -n "$PIN" ]; then
         adb shell input text "$PIN"
