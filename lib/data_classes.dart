@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -276,6 +274,10 @@ class WordKey {
 
   void trimRight() {
     word = word.trimRight();
+  }
+
+  int get length {
+    return word.length;
   }
 }
 

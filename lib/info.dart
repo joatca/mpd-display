@@ -43,7 +43,9 @@ class InfoState {
     scrollPoints.clear();
     for (var si in _info.subInfos) {
       for (var wk in si.wordKeys) {
-        scrollPoints.add(wk.key);
+        if (wk.length > 1) { // don't scroll to single-character "words"
+          scrollPoints.add(wk.key);
+        }
       }
     }
   }
