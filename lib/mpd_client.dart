@@ -493,10 +493,8 @@ class MPDClient {
       info.addAll(InfoType.performer, response["artist"]);
     }
     info.addAll(InfoType.performer, response["performer"]);
+    // we assume the album artist is always a performer; the Set will deal with duplicates
     info.addAll(InfoType.performer, response["albumartist"]);
-    var trackDetails = response.containsKey("track")
-        ? (response["track"]?.first ?? "?")
-        : null;
     info.addAll(InfoType.album, response["album"]);
     info.addAll(InfoType.station, response["name"]);
     info.addAll(InfoType.genre, response["genre"]);
