@@ -182,6 +182,12 @@ class PageState extends ChangeNotifier {
       height: 1.1,
       weight: FontWeight.w600,
     ),
+    "Cockpit": InfoFontTheme(
+      font: "B612",
+      titleSize: 80,
+      infoSize: 64,
+      height: 1.0,
+    ),
     "Headline": InfoFontTheme(
       font: "DMSerif",
       titleSize: 84,

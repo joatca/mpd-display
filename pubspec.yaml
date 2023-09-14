@@ -79,6 +79,9 @@ flutter:
     - family: Garamond
       fonts:
         - asset: fonts/EBGaramond.ttf
+    - family: B612
+      fonts:
+        - asset: fonts/B612-Regular.ttf
     - family: Baskerville
       fonts:
         - asset: fonts/LibreBaskerville-Regular.ttf
