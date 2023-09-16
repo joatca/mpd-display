@@ -122,7 +122,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
     }
     infoStream = widget.mpd.infoStream();
     startListening();
-    ticker ??= Timer.periodic(const Duration(seconds: 1), tickScroll);
+    ticker ??= Timer.periodic(const Duration(milliseconds: 200), tickScroll);
   }
 
   void stopThat() {
