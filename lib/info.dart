@@ -266,7 +266,7 @@ class _InfoWidgetState extends State<InfoWidget> with WidgetsBindingObserver {
       await Scrollable.ensureVisible(
         cntxt,
         duration: const Duration(seconds: 1),
-        curve: Curves.easeInOut,
+        curve: pos == 0 ? Curves.easeInOutCubicEmphasized : Curves.easeInOut,
         // this prioritizes the first lines, doesn't scroll until it absolutely
         // has to, and makes the last line the least visible
         alignmentPolicy: pos == 0
